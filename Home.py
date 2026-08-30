@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import streamlit.components.v1 as components
 from utils.translations import init_language, t
 
 # ==========================================
@@ -214,6 +215,27 @@ st.markdown("""
             line-height: 1.5;
             margin: 0;
         }
+
+        /* 💳 Pricing Card Custom Styling */
+        .price-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            border: 2px solid #E2E8F0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        .price-card:hover {
+            transform: translateY(-4px);
+            border-color: #2563EB;
+        }
+        .price-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #0F172A;
+            margin: 10px 0;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -247,7 +269,6 @@ with btn_col1:
 
 with btn_col2:
     if st.button("✨ Try Demo Dataset", type="secondary", use_container_width=True):
-        # 📊 إنشاء مجموعة بيانات مبيعات متكاملة ومثالية للتجربة والتصوير
         np.random.seed(42)
         dates = pd.date_range(start="2026-01-01", periods=120, freq="D")
         regions = ["North America", "Europe", "Asia-Pacific", "Latin America"]
@@ -265,7 +286,6 @@ with btn_col2:
             "Customer_Rating": np.random.uniform(3.8, 5.0, 120).round(1)
         })
         
-        # حفظ البيانات في session_state لتتفاعل معها بقية الصفحات فوراً
         st.session_state["df"] = demo_df
         st.session_state["file_name"] = "Demo_Sales_Dataset.csv"
         st.toast("⚡ Demo Dataset Loaded Successfully!", icon="🎉")
@@ -363,6 +383,82 @@ with c9:
         <p>Package all cleaned CSV/Excel files, audit text logs, and JSON schema metadata into a single ZIP file.</p>
     </div>
     """, unsafe_allow_html=True)
+
+st.divider()
+
+# ==========================================
+# 💳 Pricing & Paddle Checkout Section
+# ==========================================
+st.subheader("💳 Flexible Pricing Plans")
+
+PADDLE_CLIENT_TOKEN = "live_348aab7f372a0cc9cce3a87e467"
+PRICE_MONTHLY = "pri_01m19xbb6ktbg8y28k9p5dvjyh"
+PRICE_6MONTHS = "pri_01m19x6w138sn1sr3cnjfn90cn"
+PRICE_ANNUAL = "pri_01m19x068bamgcp9agk0rcf9h4"
+
+def render_paddle_button(price_id, button_text):
+    html_code = f"""
+    <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+    <script>
+      Paddle.Environment.set('live'); 
+      Paddle.Initialize({{ token: '{PADDLE_CLIENT_TOKEN}' }});
+
+      function openCheckout() {{
+        Paddle.Checkout.open({{
+          items: [{{ priceId: '{price_id}', quantity: 1 }}]
+        }});
+      }}
+    </script>
+    <button onclick="openCheckout()" style="
+        background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 15px;
+        width: 100%;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        transition: all 0.3s ease;
+    ">
+        {button_text}
+    </button>
+    """
+    components.html(html_code, height=60)
+
+p_col1, p_col2, p_col3 = st.columns(3)
+
+with p_col1:
+    st.markdown("""
+    <div class='price-card'>
+        <h3>Monthly Plan</h3>
+        <div class='price-value'>$29 <span style='font-size: 14px; color: #64748B;'>/ month</span></div>
+        <p style='color: #64748B; font-size: 13px;'>Billed monthly. Standard access to all AI features.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    render_paddle_button(PRICE_MONTHLY, "Subscribe Monthly")
+
+with p_col2:
+    st.markdown("""
+    <div class='price-card' style='border-color: #2563EB; background: #F8FAFC;'>
+        <span style='background: #2563EB; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;'>POPULAR</span>
+        <h3 style='margin-top: 5px;'>6-Month Plan</h3>
+        <div class='price-value'>$140 <span style='font-size: 14px; color: #64748B;'>/ 6 months</span></div>
+        <p style='color: #64748B; font-size: 13px;'>Save ~20% compared to monthly billing.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    render_paddle_button(PRICE_6MONTHS, "Subscribe 6 Months")
+
+with p_col3:
+    st.markdown("""
+    <div class='price-card'>
+        <h3>Annual Plan</h3>
+        <div class='price-value'>$260 <span style='font-size: 14px; color: #64748B;'>/ year</span></div>
+        <p style='color: #64748B; font-size: 13px;'>Best value for teams and enterprise workflows.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    render_paddle_button(PRICE_ANNUAL, "Subscribe Annually")
 
 st.divider()
 st.info("👈 Use the navigation sidebar on the left to start exploring your dataset!")
