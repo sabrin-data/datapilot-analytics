@@ -13,6 +13,10 @@ st.set_page_config(
     layout="wide"
 )
 
+# 🔒 Paywall / Subscription Check (Freemium Gate)
+from utils.paywall import check_subscription
+check_subscription("Executive Dashboard")
+
 # يقرأ اللغة المختارة ويظهر القائمة الجانبية
 init_language()
 
@@ -248,3 +252,11 @@ if user_query:
                 
         else:
             st.info(f"📊 **Executive Insight for '{user_query}':**\nBased on current filters, your active dataset contains **{len(filtered_df):,} total records**. Primary distribution focuses on `{main_chart_cat if main_chart_cat else 'selected columns'}`.")
+
+st.divider()
+
+# Transition Button
+col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
+with col_b2:
+    if st.button("Proceed to Machine Learning Studio ➔", type="primary", use_container_width=True, key="btn_proceed_ml"):
+        st.switch_page("pages/8_Machine_Learning.py")

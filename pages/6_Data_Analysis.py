@@ -14,6 +14,10 @@ st.set_page_config(
     layout="wide"
 )
 
+# 🔒 Paywall / Subscription Check (Freemium Gate)
+from utils.paywall import check_subscription
+check_subscription("Exploratory Data Analysis")
+
 # تفعيل تهيئة اللغة (بدون إظهار قائمة السايدبار)
 init_language()
 
@@ -45,7 +49,7 @@ st.divider()
 # ==========================================
 num_cols = df.select_dtypes(include=np.number).columns.tolist()
 
-# ✅ التعديل الأدق: تشميل جميع الأعمدة النصية بدون تقييد العدد بـ 50، + الأعمدة الرقمية التصنيفية (أقل من 100 قيمة)
+# ✅ تصنيف الأعمدة التصنيفية والنصية
 cat_cols = [
     col for col in df.columns 
     if str(df[col].dtype) in ['object', 'category', 'string'] 
@@ -271,5 +275,5 @@ st.divider()
 # Transition Button
 col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
 with col_b2:
-    if st.button("Proceed to Interactive Dashboard Studio ➔", type="primary", use_container_width=True):
+    if st.button("Proceed to Interactive Dashboard Studio ➔", type="primary", use_container_width=True, key="btn_proceed_dashboard"):
         st.switch_page("pages/7_Dashboard.py")

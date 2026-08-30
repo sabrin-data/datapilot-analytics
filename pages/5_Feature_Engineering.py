@@ -12,6 +12,10 @@ st.set_page_config(
     layout="wide"
 )
 
+# 🔒 Paywall / Subscription Check (Freemium Gate)
+from utils.paywall import check_subscription
+check_subscription("Feature Engineering Studio")
+
 # يقرأ اللغة المختارة ويظهر القائمة الجانبية
 init_language()
 
@@ -40,6 +44,7 @@ st.divider()
 
 # Separate data types
 num_cols = df.select_dtypes(include=np.number).columns.tolist()
+cat_cols = df.select_dtypes(include=["object", "category", "string"]).columns.tolist()
 
 # ==========================================
 # 🧪 Module 1: Custom Advanced Multi-Column Formula
@@ -183,24 +188,9 @@ with st.expander("🏷️ Module 5: Categorical Encoding & Feature Scaling"):
     
     with e1:
         st.markdown("##### **Categorical Encoding**")
-        
-        # استبعاد المعرفات الفريدة (IDs) التي تمثل مفاتيح رئيسية وليست متغيرات فئوية
-        valid_cat_cols = [
-            c for c in df.select_dtypes(include=["object", "category", "string"]).columns 
-            if df[c].nunique() < (len(df) * 0.9)
-        ]
-        
-        if valid_cat_cols:
-            encode_target = st.selectbox(
-                "Select Categorical Column", 
-                options=valid_cat_cols, 
-                key="encode_target_col_key"
-            )
-            encode_method = st.radio(
-                "Encoding Method", 
-                ["One-Hot Encoding (Dummy Variables)", "Ordinal / Label Encoding"], 
-                key="encode_method_radio_key"
-            )
+        if cat_cols:
+            encode_target = st.selectbox("Select Categorical Column", cat_cols, key="encode_target_col_key")
+            encode_method = st.radio("Encoding Method", ["One-Hot Encoding (Dummy Variables)", "Ordinal / Label Encoding"], key="encode_method_radio_key")
             
             if st.button("🏷️ Apply Encoding", key="btn_apply_encode"):
                 if "One-Hot" in encode_method and df[encode_target].nunique() > 50:
@@ -212,11 +202,6 @@ with st.expander("🏷️ Module 5: Categorical Encoding & Feature Scaling"):
                         df[f"{encode_target}_encoded"] = df[encode_target].astype("category").cat.codes
                     
                     st.session_state["df"] = df
-                    
-                    # تنظيف مفتاح الـ selectbox لمنع عودته التلقائية للخيار الأول
-                    if "encode_target_col_key" in st.session_state:
-                        del st.session_state["encode_target_col_key"]
-                        
                     st.success(f"🎉 Encoded `{encode_target}` successfully!")
                     st.rerun()
         else:

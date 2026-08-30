@@ -7,6 +7,9 @@ import streamlit as st
 import streamlit.components.v1 as components
 from utils.translations import init_language, t
 
+# 🔒 Paywall / Subscription Check (Freemium Gate)
+from utils.paywall import check_subscription
+
 # ==========================================
 # 0. Page Configuration & Language Init
 # ==========================================
@@ -15,6 +18,9 @@ st.set_page_config(
     page_icon="📄",
     layout="wide"
 )
+
+# تفعيل فحص اشتراك المستخدم لهذه الصفحة
+check_subscription("Executive Report Generator")
 
 # يقرأ اللغة المختارة ويظهر القائمة الجانبية
 init_language()
@@ -135,7 +141,7 @@ def generate_html_report(dataframe, title, author, inc_summary, inc_charts, inc_
                 y=num_cols[0], 
                 title=f"Top {cat_cols[0]} by Avg {num_cols[0]}",
                 template="plotly_white",
-                color_discrete_sequence=['#4F46E5']  # لون أزرق احترافي بدلاً من الأسود
+                color_discrete_sequence=['#4F46E5']
             )
             fig1.update_traces(marker_color='#4F46E5')
             fig1.update_layout(
@@ -154,7 +160,7 @@ def generate_html_report(dataframe, title, author, inc_summary, inc_charts, inc_
                 values='Count', 
                 title=f"Distribution of Top {cat_cols[0]}",
                 template="plotly_white",
-                color_discrete_sequence=color_palette  # ألوان زاهية ومتعددة للقطاعات
+                color_discrete_sequence=color_palette
             )
             fig2.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)",

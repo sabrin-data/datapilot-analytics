@@ -14,6 +14,10 @@ st.set_page_config(
     layout="wide"
 )
 
+# 🔒 Paywall / Subscription Check (Freemium Gate)
+from utils.paywall import check_subscription
+check_subscription("Data Overview & Diagnostics")
+
 # يقرأ اللغة المختارة ويظهر القائمة الجانبية
 init_language()
 

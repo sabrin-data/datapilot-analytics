@@ -70,12 +70,10 @@ def load_dataset(uploaded_file):
 # ==========================================
 # 2. File Upload Widget & Processing
 # ==========================================
-# إضافة key يمنع تفريغ أداة الرفع عند الانتقال بين الصفحات
 uploaded_file = st.file_uploader(
     "Choose a file from your computer", 
     type=["csv", "xlsx", "xls"],
-    help="Supported formats: CSV, Excel (.xlsx, .xls)",
-    key="uploaded_file_key"
+    help="Supported formats: CSV, Excel (.xlsx, .xls)"
 )
 
 if uploaded_file is not None:
@@ -87,9 +85,7 @@ if uploaded_file is not None:
         st.session_state["df"] = df.copy()
         st.session_state["original_df"] = df.copy()
         st.session_state["file_name"] = filename
-        if "cleaning_log" not in st.session_state or st.session_state.get("last_uploaded_file") != filename:
-            st.session_state["cleaning_log"] = []
-            st.session_state["last_uploaded_file"] = filename
+        st.session_state["cleaning_log"] = []  # إعادة إعادة ضبط سجل التنظيف للملف الجديد
 
         st.success(f"🎉 Dataset **'{filename}'** successfully uploaded and loaded into active memory!")
 
