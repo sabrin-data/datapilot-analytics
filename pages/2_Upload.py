@@ -51,14 +51,14 @@ def render_paddle_checkout_wall():
         html_code = f"""
         <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
         <script>
-          Paddle.Environment.set('live'); 
-          Paddle.Initialize({{ token: '{PADDLE_CLIENT_TOKEN}' }});
+         Paddle.Environment.set('live'); 
+         Paddle.Initialize({{ token: '{PADDLE_CLIENT_TOKEN}' }});
 
-          function openCheckout() {{
-            Paddle.Checkout.open({{
-              items: [{{ priceId: '{price_id}', quantity: 1 }}]
-            }});
-          }}
+         function openCheckout() {{
+           Paddle.Checkout.open({{
+             items: [{{ priceId: '{price_id}', quantity: 1 }}]
+           }});
+         }}
         </script>
         <button onclick="openCheckout()" style="
             background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
@@ -106,7 +106,7 @@ def render_paddle_checkout_wall():
         """, unsafe_allow_html=True)
         render_paywall_paddle_button(PRICE_ANNUAL, "Subscribe Annually")
 
-# التحقق حصرياً من اشتراك المستخدم الحقيقي (تجاهل حالة الديمو عند رفع ملف من الجهاز)
+# التحقق من حالة الاشتراك في الجلسة
 is_subscribed = st.session_state.get("is_subscribed", False)
 
 # ==========================================
@@ -155,16 +155,16 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
-    # إذا حاول المستخدم رفع ملف من جهازه ولم يكن مشتركاً، نمنعه ونظهر له بوابة الدفع فوراً
+    # إذا حاول رفع ملف ولم يكن مشتركاً ولم يضغط على زر محاكاة الاشتراك في الهوم
     if not is_subscribed:
         render_paddle_checkout_wall()
-        st.stop()  # إيقاف التنفيذ هنا لمنع معالجة الملف
+        st.stop()  # إيقاف التنفيذ لمنع رفع الملف
 
     try:
         with st.spinner("Parsing dataset and verifying structural integrity..."):
             df, filename, used_encoding = load_dataset(uploaded_file)
 
-        # Persist loaded dataframe into Session State
+        # حفظ البيانات في الـ Session State
         st.session_state["df"] = df.copy()
         st.session_state["original_df"] = df.copy()
         st.session_state["file_name"] = filename
@@ -172,20 +172,17 @@ if uploaded_file is not None:
 
         st.success(f"🎉 Dataset **'{filename}'** successfully uploaded and loaded into active memory!")
 
-        # Metadata Quick Metrics
+        # إحصائيات سريعة
         m_col1, m_col2, m_col3, m_col4 = st.columns(4)
-        m_col1.metric(t("total_rows") if t("total_rows") != "total_rows" else "📊 Total Rows", f"{len(df):,}")
-        m_col2.metric(t("total_columns") if t("total_columns") != "total_columns" else "📊 Total Columns", df.shape[1])
+        m_col1.metric("📊 Total Rows", f"{len(df):,}")
+        m_col2.metric("📊 Total Columns", df.shape[1])
         m_col3.metric("🔤 Detected Encoding", used_encoding)
         m_col4.metric("💾 Memory Footprint", f"{df.memory_usage(deep=True).sum() / 1024:.1f} KB")
 
         st.divider()
 
-        # ==========================================
-        # 3. Quick Dataset Inspection
-        # ==========================================
+        # معاينة سريعة
         st.subheader("🔍 Initial Structural Verification")
-
         col_left, col_right = st.columns([2, 1])
 
         with col_left:
@@ -203,7 +200,7 @@ if uploaded_file is not None:
 
         st.divider()
 
-        # Navigation CTA
+        # زر المتابعة
         c_space, c_btn, c_space2 = st.columns([1, 2, 1])
         with c_btn:
             if st.button("Proceed to Data Overview ➔", type="primary", use_container_width=True):
@@ -213,11 +210,23 @@ if uploaded_file is not None:
         st.error(f"❌ Failed to parse file: {str(e)}")
 
 else:
-    # Check if a dataset was previously loaded in the session (مثل بيانات الديمو أو ملفات سابقة)
+    # التحقق من وجود بيانات مسبقة (مثل ملف الديمو أو ملف مرفوع سابقاً)
     if "df" in st.session_state and st.session_state["df"] is not None:
         st.info(f"📁 Active Dataset in Memory: **{st.session_state.get('file_name', 'Dataset')}** ({st.session_state['df'].shape[0]:,} rows × {st.session_state['df'].shape[1]} columns)")
         
-        if st.button("Continue with Active Dataset ➔", type="secondary"):
-            st.switch_page("pages/3_Data_Overview.py")
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("Continue with Active Dataset ➔", type="primary", use_container_width=True):
+                st.switch_page("pages/3_Data_Overview.py")
+        with c2:
+            # زر لتحميل النسخة الحالية المعالجة كملف CSV (تعديل الـ Download)
+            csv_data = st.session_state["df"].to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="📥 Download Current Dataset (CSV)",
+                data=csv_data,
+                file_name=st.session_state.get('file_name', 'datapilot_export.csv'),
+                mime='text/csv',
+                use_container_width=True
+            )
     else:
-        st.warning(t("no_dataset") if t("no_dataset") != "no_dataset" else "👈 Please upload a file above to unlock the analysis pipeline.")
+        st.warning("👈 Please upload a file above or try the Demo Dataset from the Home page to unlock the analysis pipeline.")
