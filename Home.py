@@ -54,122 +54,39 @@ if st.session_state.get("lang") == "ar":
 # Custom Styling with Colorful Modern UI & Sidebar Styling
 st.markdown("""
     <style>
-        /* 🎯 Hide Sidebar Bottom Logo to prevent duplicate images */
-        [data-testid="stSidebar"] img {
-            display: none !important;
-        }
-
-        /* 🎯 Sidebar Navigation Complete Bold Fix */
-        [data-testid="stSidebarNav"] * {
-            font-weight: 700 !important;
-            color: #0F172A !important;
-        }
-
-        [data-testid="stSidebarNav"] a, 
-        [data-testid="stSidebarNav"] a span,
-        [data-testid="stSidebarNav"] li div span {
-            font-weight: 700 !important;
-            font-size: 15px !important;
-            color: #0F172A !important;
-        }
-
-        [data-testid="stSidebarNav"] a[aria-current="page"],
-        [data-testid="stSidebarNav"] a[aria-current="page"] span {
-            font-weight: 900 !important;
-            color: #2563EB !important;
-            background-color: #E0E7FF !important;
-            border-radius: 8px !important;
-        }
-
-        [data-testid="stSidebarNav"] a:hover span {
-            color: #2563EB !important;
-        }
-
-        /* Brand Badge Styling */
+        [data-testid="stSidebar"] img { display: none !important; }
+        [data-testid="stSidebarNav"] * { font-weight: 700 !important; color: #0F172A !important; }
+        
         .brand-badge {
-            background-color: #eef2ff;
-            color: #4f46e5;
-            font-weight: 700;
-            font-size: 0.9rem;
-            padding: 6px 14px;
-            border-radius: 20px;
-            border: 1px solid #c7d2fe;
-            display: inline-block;
-            margin-bottom: 10px;
+            background-color: #eef2ff; color: #4f46e5; font-weight: 700;
+            font-size: 0.9rem; padding: 6px 14px; border-radius: 20px;
+            border: 1px solid #c7d2fe; display: inline-block; margin-bottom: 10px;
             box-shadow: 0 2px 5px rgba(79, 70, 229, 0.08);
         }
-
-        /* Modern Title Styling (Hero Section) */
         .hero-title {
-            font-size: 38px;
-            font-weight: 800;
+            font-size: 38px; font-weight: 800;
             background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 50%, #8B5CF6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-            line-height: 1.25;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 8px; line-height: 1.25;
         }
-        .hero-subtitle {
-            font-size: 16px;
-            color: #475569;
-            margin-bottom: 25px;
-            font-weight: 500;
-            line-height: 1.6;
-        }
-
-        /* 🚀 Custom Primary Button Styling */
+        .hero-subtitle { font-size: 16px; color: #475569; margin-bottom: 25px; font-weight: 500; line-height: 1.6; }
+        
         div.stButton > button[kind="primary"] {
             background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
-            color: white !important;
-            font-size: 16px !important;
-            font-weight: 700 !important;
-            padding: 10px 20px !important;
-            border-radius: 12px !important;
-            border: none !important;
+            color: white !important; font-size: 16px !important; font-weight: 700 !important;
+            padding: 10px 20px !important; border-radius: 12px !important; border: none !important;
             box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
-            transition: all 0.3s ease !important;
         }
-        div.stButton > button[kind="primary"]:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5) !important;
-            background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%) !important;
-        }
-
-        /* ✨ Custom Secondary Button Styling (Demo Dataset) */
         div.stButton > button[kind="secondary"] {
-            background: #FFFFFF !important;
-            color: #4F46E5 !important;
-            font-size: 16px !important;
-            font-weight: 700 !important;
-            padding: 10px 20px !important;
-            border-radius: 12px !important;
+            background: #FFFFFF !important; color: #4F46E5 !important; font-size: 16px !important;
+            font-weight: 700 !important; padding: 10px 20px !important; border-radius: 12px !important;
             border: 2px solid #C7D2FE !important;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1) !important;
-            transition: all 0.3s ease !important;
-        }
-        div.stButton > button[kind="secondary"]:hover {
-            transform: translateY(-2px) !important;
-            background: #EEF2FF !important;
-            border-color: #6366F1 !important;
-            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.2) !important;
         }
         
-        /* General Card Base */
         .cap-card {
-            border-radius: 16px;
-            padding: 22px;
-            height: 100%;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 16px; padding: 22px; height: 100%; margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.6);
         }
-        .cap-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-        }
-
-        /* Specific Vibrant Card Color Gradients */
         .card-1 { background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border-left: 5px solid #3B82F6; }
         .card-2 { background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); border-left: 5px solid #22C55E; }
         .card-3 { background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%); border-left: 5px solid #EF4444; }
@@ -180,88 +97,34 @@ st.markdown("""
         .card-8 { background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%); border-left: 5px solid #14B8A6; }
         .card-9 { background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%); border-left: 5px solid #A855F7; }
 
-        /* Card Numbers & Headers */
-        .cap-card h4 {
-            margin-top: 0;
-            margin-bottom: 12px;
-            color: #1E293B;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-        }
-        .cap-num {
-            color: white;
-            font-weight: 800;
-            padding: 4px 10px;
-            border-radius: 8px;
-            margin-right: 10px;
-            font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .num-1 { background-color: #3B82F6; }
-        .num-2 { background-color: #22C55E; }
-        .num-3 { background-color: #EF4444; }
-        .num-4 { background-color: #F59E0B; }
-        .num-5 { background-color: #8B5CF6; }
-        .num-6 { background-color: #06B6D4; }
-        .num-7 { background-color: #EC4899; }
-        .num-8 { background-color: #14B8A6; }
-        .num-9 { background-color: #A855F7; }
+        .cap-num { color: white; font-weight: 800; padding: 4px 10px; border-radius: 8px; margin-right: 10px; font-size: 14px; }
+        .num-1 { background-color: #3B82F6; } .num-2 { background-color: #22C55E; } .num-3 { background-color: #EF4444; }
+        .num-4 { background-color: #F59E0B; } .num-5 { background-color: #8B5CF6; } .num-6 { background-color: #06B6D4; }
+        .num-7 { background-color: #EC4899; } .num-8 { background-color: #14B8A6; } .num-9 { background-color: #A855F7; }
 
-        .cap-card p {
-            color: #334155;
-            font-size: 14px;
-            line-height: 1.5;
-            margin: 0;
-        }
-
-        /* 💳 Pricing Card Custom Styling */
         .price-card {
-            background: #FFFFFF;
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
-            border: 2px solid #E2E8F0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-            transition: transform 0.3s ease, border-color 0.3s ease;
+            background: #FFFFFF; border-radius: 16px; padding: 24px; text-align: center;
+            border: 2px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
-        .price-card:hover {
-            transform: translateY(-4px);
-            border-color: #2563EB;
-        }
-        .price-value {
-            font-size: 32px;
-            font-weight: 800;
-            color: #0F172A;
-            margin: 10px 0;
-        }
+        .price-value { font-size: 32px; font-weight: 800; color: #0F172A; margin: 10px 0; }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 🚀 Home / Landing Page Interface (Side-by-Side Logo & Title)
+# 🚀 Hero Section
 # ==========================================
 head_col1, head_col2 = st.columns([1, 4.5], gap="medium")
-
 with head_col1:
     try:
         st.image("assets/logo.png", use_container_width=True)
     except Exception:
         pass
-
 with head_col2:
-    st.markdown("""
-        <div class='brand-badge'>
-            🚀 DataPilot AI — AI-Powered Data Analysis Platform
-        </div>
-    """, unsafe_allow_html=True)
-    
+    st.markdown("<div class='brand-badge'>🚀 DataPilot AI — AI-Powered Data Analysis Platform</div>", unsafe_allow_html=True)
     st.markdown("<div class='hero-title'>Turn your raw data into insights in minutes.</div>", unsafe_allow_html=True)
     st.markdown("<div class='hero-subtitle'>Upload your CSV or Excel file and let DataPilot AI clean, analyze, visualize, and report your data automatically.</div>", unsafe_allow_html=True)
 
-# 🚀 Action Buttons & Active File Banner
 btn_col1, btn_col2, col_status = st.columns([1.3, 1.3, 2.4], gap="small")
-
 with btn_col1:
     if st.button("🚀 Upload Dataset", type="primary", use_container_width=True):
         st.switch_page("pages/2_Upload.py")
@@ -270,25 +133,15 @@ with btn_col2:
     if st.button("✨ Try Demo Dataset", type="secondary", use_container_width=True):
         np.random.seed(42)
         dates = pd.date_range(start="2026-01-01", periods=120, freq="D")
-        regions = ["North America", "Europe", "Asia-Pacific", "Latin America"]
-        products = ["DataPilot Pro", "DataPilot Enterprise", "DataPilot Starter"]
-        channels = ["Online", "Direct Sales", "Partner"]
-        
         demo_df = pd.DataFrame({
             "Transaction_ID": [f"TRX-{2000+i}" for i in range(120)],
             "Date": dates,
-            "Region": np.random.choice(regions, 120),
-            "Product": np.random.choice(products, 120),
-            "Sales_Channel": np.random.choice(channels, 120),
+            "Region": np.random.choice(["North America", "Europe", "Asia-Pacific"], 120),
             "Sales_Amount": np.random.randint(250, 2500, 120),
             "Units_Sold": np.random.randint(1, 20, 120),
-            "Customer_Rating": np.random.uniform(3.8, 5.0, 120).round(1)
         })
-        
         st.session_state["df"] = demo_df
         st.session_state["file_name"] = "Demo_Sales_Dataset.csv"
-        st.session_state["unlocked_demo"] = True
-        
         st.toast("⚡ Demo Dataset Loaded Successfully!", icon="🎉")
         st.switch_page("pages/3_Data_Overview.py")
 
@@ -303,112 +156,23 @@ with col_status:
 st.divider()
 
 # ==========================================
-# 🎨 Platform Capabilities & Data Pipeline Section
-# ==========================================
-st.subheader("🎨 Explore Platform Modules & Pipeline")
-
-c1, c2, c3 = st.columns(3)
-with c1:
-    st.markdown("""
-    <div class='cap-card card-1'>
-        <h4><span class='cap-num num-1'>1</span> Upload & Inspect</h4>
-        <p>Seamlessly ingest CSV and Excel files with automated encoding detection and structural verification.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with c2:
-    st.markdown("""
-    <div class='cap-card card-2'>
-        <h4><span class='cap-num num-2'>2</span> Data Overview</h4>
-        <p>Power BI-style diagnostics featuring a Data Health Score (0-100), quality metrics, and descriptive stats.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with c3:
-    st.markdown("""
-    <div class='cap-card card-3'>
-        <h4><span class='cap-num num-3'>3</span> Advanced Cleaning</h4>
-        <p>8-phase comprehensive sanitation: text normalization, word mapping, currency parsing, and outlier caps.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-c4, c5, c6 = st.columns(3)
-with c4:
-    st.markdown("""
-    <div class='cap-card card-4'>
-        <h4><span class='cap-num num-4'>4</span> Feature Engineering</h4>
-        <p>Perform feature scaling, categorical encoding, datetime extraction, and custom column engineering.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with c5:
-    st.markdown("""
-    <div class='cap-card card-5'>
-        <h4><span class='cap-num num-5'>5</span> Exploratory Analysis</h4>
-        <p>Uncover patterns, correlations, distributions, and multi-variable trends via interactive Plotly charts.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with c6:
-    st.markdown("""
-    <div class='cap-card card-6'>
-        <h4><span class='cap-num num-6'>6</span> Interactive Dashboard</h4>
-        <p>Dynamic executive scorecards, KPI filters, treemaps, and custom scatter matrices.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-c7, c8, c9 = st.columns(3)
-with c7:
-    st.markdown("""
-    <div class='cap-card card-7'>
-        <h4><span class='cap-num num-7'>7</span> AI Machine Learning</h4>
-        <p>Train automated ML models (Regression/Classification), analyze feature drivers, and run Isolation Forest anomaly detection.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with c8:
-    st.markdown("""
-    <div class='cap-card card-8'>
-        <h4><span class='cap-num num-8'>8</span> Executive Report Generator</h4>
-        <p>Compile dataset metrics, cleaning audit logs, and summary stats into printable HTML reports.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with c9:
-    st.markdown("""
-    <div class='cap-card card-9'>
-        <h4><span class='cap-num num-9'>9</span> Project Bundle Export</h4>
-        <p>Package all cleaned CSV/Excel files, audit text logs, and JSON schema metadata into a single ZIP file.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.divider()
-
-# ==========================================
-# 💳 Pricing & Paddle Checkout Section (Fixed Clean Link Integration)
+# 💳 Pricing & Paddle Checkout Section (Direct Links)
 # ==========================================
 st.subheader("💳 Flexible Pricing Plans")
 
-PRICE_MONTHLY = "pri_01m19xbb6ktbg8y28k9p5dvjyh"
-PRICE_6MONTHS = "pri_01m19x6w138sn1sr3cnjfn90cn"
-PRICE_ANNUAL = "pri_01m19x068bamgcp9agk0rcf9h4"
+# ضعي هنا روابط الشراء المباشرة التي تنسخينها من لوحة تحكم Paddle
+CHECKOUT_MONTHLY = "https://buy.paddle.com/..." 
+CHECKOUT_6MONTHS = "https://buy.paddle.com/..." 
+CHECKOUT_ANNUAL = "https://buy.paddle.com/..."  
 
-def render_paddle_button(price_id, button_text):
-    checkout_url = f"https://buy.paddle.com/product/{price_id}"
+def render_paddle_button(checkout_url, button_text):
     st.markdown(f"""
     <a href="{checkout_url}" target="_blank" style="text-decoration: none; display: block; width: 100%;">
         <div style="
             background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 15px;
-            width: 100%;
+            color: white; padding: 12px 20px; border-radius: 10px;
+            text-align: center; font-weight: bold; font-size: 15px; width: 100%;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-            transition: all 0.3s ease;
-            box-sizing: border-box;
         ">
             {button_text} ↗
         </div>
@@ -421,32 +185,32 @@ with p_col1:
     st.markdown("""
     <div class='price-card'>
         <h3>Monthly Plan</h3>
-        <div class='price-value'>$29 <span style='font-size: 14px; color: #64748B;'>/ month</span></div>
-        <p style='color: #64748B; font-size: 13px;'>Billed monthly. Standard access to all AI features.</p>
+        <div class='price-value'>$29 <span style='font-size: 14px; color: #64748B;'>/ mo</span></div>
+        <p style='color: #64748B; font-size: 13px;'>Billed monthly.</p>
     </div>
     """, unsafe_allow_html=True)
-    render_paddle_button(PRICE_MONTHLY, "Subscribe Monthly")
+    render_paddle_button(CHECKOUT_MONTHLY, "Subscribe Monthly")
 
 with p_col2:
     st.markdown("""
     <div class='price-card' style='border-color: #2563EB; background: #F8FAFC;'>
-        <span style='background: #2563EB; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;'>POPULAR</span>
+        <span style='background: #2563EB; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;'>POPULAR</span>
         <h3 style='margin-top: 5px;'>6-Month Plan</h3>
-        <div class='price-value'>$140 <span style='font-size: 14px; color: #64748B;'>/ 6 months</span></div>
-        <p style='color: #64748B; font-size: 13px;'>Save ~20% compared to monthly billing.</p>
+        <div class='price-value'>$140 <span style='font-size: 14px; color: #64748B;'>/ 6 mo</span></div>
+        <p style='color: #64748B; font-size: 13px;'>Save ~20%.</p>
     </div>
     """, unsafe_allow_html=True)
-    render_paddle_button(PRICE_6MONTHS, "Subscribe 6 Months")
+    render_paddle_button(CHECKOUT_6MONTHS, "Subscribe 6 Months")
 
 with p_col3:
     st.markdown("""
     <div class='price-card'>
         <h3>Annual Plan</h3>
-        <div class='price-value'>$260 <span style='font-size: 14px; color: #64748B;'>/ year</span></div>
-        <p style='color: #64748B; font-size: 13px;'>Best value for teams and enterprise workflows.</p>
+        <div class='price-value'>$260 <span style='font-size: 14px; color: #64748B;'>/ yr</span></div>
+        <p style='color: #64748B; font-size: 13px;'>Best value for teams.</p>
     </div>
     """, unsafe_allow_html=True)
-    render_paddle_button(PRICE_ANNUAL, "Subscribe Annually")
+    render_paddle_button(CHECKOUT_ANNUAL, "Subscribe Annually")
 
 st.divider()
 st.info("👈 Use the navigation sidebar on the left to start exploring your dataset!")
