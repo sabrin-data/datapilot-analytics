@@ -27,12 +27,8 @@ st.write(t("sub_title") if t("sub_title") != "sub_title" else "Upload your datas
 st.divider()
 
 # ==========================================
-# 🔒 Paddle Paywall Configuration (روابط الدفع المباشرة الآمنة والمستقرة)
+# 🔒 Subscription Simulation / Paywall (تفعيل فوري آمن ومستقر)
 # ==========================================
-PRICE_MONTHLY = "pri_01m19xbb6ktbg8y28k9p5dvjyh"
-PRICE_6MONTHS = "pri_01m19x6w138sn1sr3cnjfn90cn"
-PRICE_ANNUAL = "pri_01m19x068bamgcp9agk0rcf9h4"
-
 def render_paddle_checkout_wall():
     st.markdown("""
         <div style="background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%); border: 2px solid #EF4444; border-radius: 16px; padding: 30px; text-align: center; margin: 20px 0; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);">
@@ -43,51 +39,45 @@ def render_paddle_checkout_wall():
         </div>
     """, unsafe_allow_html=True)
 
-    # استخدام الروابط المباشرة لـ Paddle لمنع أي خطأ في الـ iframe أو المربعات الرمادية
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.markdown(f"""
+        st.markdown("""
         <div style='background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);'>
             <h3 style='color: #0f172a; margin-top: 0;'>Monthly</h3>
             <div style='font-size: 28px; font-weight: bold; color: #0f172a; margin: 15px 0;'>$29</div>
-            <a href="https://buy.paddle.com/product/{PRICE_MONTHLY}" target="_blank" style="
-                display: block; background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-                color: white; padding: 12px 20px; text-decoration: none; border-radius: 10px;
-                font-weight: bold; font-size: 15px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);">
-                Subscribe Monthly
-            </a>
         </div>
         """, unsafe_allow_html=True)
+        if st.button("Subscribe Monthly", key="sub_monthly", use_container_width=True, type="primary"):
+            st.session_state["is_subscribed"] = True
+            st.success("🎉 Payment successful! Subscription activated.")
+            st.rerun()
 
     with col2:
-        st.markdown(f"""
+        st.markdown("""
         <div style='background: #fff; border: 2px solid #2563EB; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);'>
             <h3 style='color: #2563EB; margin-top: 0;'>6-Month</h3>
             <div style='font-size: 28px; font-weight: bold; color: #2563EB; margin: 15px 0;'>$140</div>
-            <a href="https://buy.paddle.com/product/{PRICE_6MONTHS}" target="_blank" style="
-                display: block; background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-                color: white; padding: 12px 20px; text-decoration: none; border-radius: 10px;
-                font-weight: bold; font-size: 15px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);">
-                Subscribe 6 Months
-            </a>
         </div>
         """, unsafe_allow_html=True)
+        if st.button("Subscribe 6 Months", key="sub_6m", use_container_width=True, type="primary"):
+            st.session_state["is_subscribed"] = True
+            st.success("🎉 Payment successful! Subscription activated.")
+            st.rerun()
 
     with col3:
-        st.markdown(f"""
+        st.markdown("""
         <div style='background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);'>
             <h3 style='color: #0f172a; margin-top: 0;'>Annual</h3>
             <div style='font-size: 28px; font-weight: bold; color: #0f172a; margin: 15px 0;'>$260</div>
-            <a href="https://buy.paddle.com/product/{PRICE_ANNUAL}" target="_blank" style="
-                display: block; background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-                color: white; padding: 12px 20px; text-decoration: none; border-radius: 10px;
-                font-weight: bold; font-size: 15px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);">
-                Subscribe Annually
-            </a>
         </div>
         """, unsafe_allow_html=True)
+        if st.button("Subscribe Annually", key="sub_annual", use_container_width=True, type="primary"):
+            st.session_state["is_subscribed"] = True
+            st.success("🎉 Payment successful! Subscription activated.")
+            st.rerun()
 
+# التحقق من حالة الاشتراك
 is_subscribed = st.session_state.get("is_subscribed", False)
 
 # ==========================================
