@@ -1,174 +1,166 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
 from utils.translations import init_language, t
 
 # ==========================================
-# 0. Page Configuration
+# 0. Page Configuration & Language Init
 # ==========================================
 st.set_page_config(
-    page_title="DataPilot AI - Home",
-    page_icon="🧠",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="DataPilot AI — Platform Home",
+    page_icon="🚀",
+    layout="wide"
 )
 
-# 🌐 1. Initialize Language & Sidebar Selector
 init_language()
 
-# 🎨 2. Load Custom CSS from Assets
+# قراءة الـ CSS الموحد
 try:
     with open("assets/style.css", encoding="utf-8") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 except FileNotFoundError:
     pass
 
-# 🔄 3. RTL Page Direction Handling
-if st.session_state.get("lang") == "ar":
-    st.markdown("""
-        <style>
-            .stApp {
-                direction: RTL;
-                text-align: right;
-            }
-        </style>
-    """, unsafe_allow_html=True)
-
-# Custom Styling
-st.markdown("""
-    <style>
-        [data-testid="stSidebar"] img { display: none !important; }
-        [data-testid="stSidebarNav"] * { font-weight: 700 !important; color: #0F172A !important; }
-        
-        .brand-badge {
-            background-color: #eef2ff; color: #4f46e5; font-weight: 700;
-            font-size: 0.9rem; padding: 6px 14px; border-radius: 20px;
-            border: 1px solid #c7d2fe; display: inline-block; margin-bottom: 10px;
-        }
-        .hero-title {
-            font-size: 38px; font-weight: 800;
-            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 50%, #8B5CF6 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 8px; line-height: 1.25;
-        }
-        .hero-subtitle { font-size: 16px; color: #475569; margin-bottom: 25px; font-weight: 500; line-height: 1.6; }
-        
-        .price-card {
-            background: #FFFFFF; border-radius: 16px; padding: 24px; text-align: center;
-            border: 2px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        }
-        .price-value { font-size: 32px; font-weight: 800; color: #0F172A; margin: 10px 0; }
-    </style>
-""", unsafe_allow_html=True)
-
 # ==========================================
-# 🚀 Hero Section
+# Hero Section
 # ==========================================
-head_col1, head_col2 = st.columns([1, 4.5], gap="medium")
-with head_col1:
+col_img, col_text = st.columns([1, 2.5], gap="large")
+
+with col_img:
     try:
         st.image("assets/logo.png", use_container_width=True)
     except Exception:
-        pass
-with head_col2:
-    st.markdown("<div class='brand-badge'>🚀 DataPilot AI — AI-Powered Data Analysis Platform</div>", unsafe_allow_html=True)
-    st.markdown("<div class='hero-title'>Turn your raw data into insights in minutes.</div>", unsafe_allow_html=True)
-    st.markdown("<div class='hero-subtitle'>Upload your CSV or Excel file and let DataPilot AI clean, analyze, visualize, and report your data automatically.</div>", unsafe_allow_html=True)
-
-# تهيئة حالة الاشتراك في الجلسة
-if "is_subscribed" not in st.session_state:
-    st.session_state["is_subscribed"] = False
-
-# التحقق مما إذا كان المستخدم مشتركاً أم لا
-if st.session_state["is_subscribed"]:
-    # حالة الاشتراك المفعل (عرض أزرار العمل ورفع البيانات)
-    st.success("🎉 **Active Subscription:** You are subscribed to DataPilot AI Pro! All platform features are unlocked.")
-    
-    btn_col1, btn_col2, col_status = st.columns([1.3, 1.3, 2.4], gap="small")
-    with btn_col1:
-        if st.button("🚀 Upload Dataset", type="primary", use_container_width=True):
-            st.switch_page("pages/2_Upload.py")
-
-    with btn_col2:
-        if st.button("✨ Try Demo Dataset", type="secondary", use_container_width=True):
-            np.random.seed(42)
-            dates = pd.date_range(start="2026-01-01", periods=120, freq="D")
-            demo_df = pd.DataFrame({
-                "Transaction_ID": [f"TRX-{2000+i}" for i in range(120)],
-                "Date": dates,
-                "Region": np.random.choice(["North America", "Europe", "Asia-Pacific"], 120),
-                "Sales_Amount": np.random.randint(250, 2500, 120),
-                "Units_Sold": np.random.randint(1, 20, 120),
-            })
-            st.session_state["df"] = demo_df
-            st.session_state["file_name"] = "Demo_Sales_Dataset.csv"
-            st.toast("⚡ Demo Dataset Loaded Successfully!", icon="🎉")
-            st.switch_page("pages/3_Data_Overview.py")
-
-    with col_status:
-        if "df" in st.session_state and st.session_state["df"] is not None:
-            file_name = st.session_state.get("file_name", "Dataset")
-            df_shape = st.session_state["df"].shape
-            st.success(f"📁 **Active Dataset:** {file_name} ({df_shape[0]:,} rows × {df_shape[1]} cols)")
-        else:
-            st.info("📂 **No Active Dataset:** Upload CSV or click 'Try Demo Dataset'.")
-
-    st.divider()
-    
-    if st.button("🔒 Cancel / Reset Subscription (For Testing)"):
-        st.session_state["is_subscribed"] = False
-        st.rerun()
-
-else:
-    # حالة عدم الاشتراك (عرض خطط الأسعار وإجبار المستخدم على الاشتراك للاستخدام)
-    st.warning("🔒 **Subscription Required:** Please choose a pricing plan below to unlock DataPilot AI features and start analyzing your data.")
-    st.divider()
-    
-    st.subheader("💳 Flexible Pricing Plans")
-    p_col1, p_col2, p_col3 = st.columns(3)
-
-    with p_col1:
         st.markdown("""
-        <div class='price-card'>
-            <h3>Monthly Plan</h3>
-            <div class='price-value'>$29 <span style='font-size: 14px; color: #64748B;'>/ mo</span></div>
-            <p style='color: #64748B; font-size: 13px;'>Billed monthly.</p>
-        </div>
+            <div style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); border-radius: 50%; width: 180px; height: 180px; display: flex; align-items: center; justify-content: center; margin: auto; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);">
+                <span style="font-size: 70px;">🚀</span>
+            </div>
         """, unsafe_allow_html=True)
-        if st.button("Subscribe Monthly", key="btn_m", use_container_width=True):
-            st.session_state["is_subscribed"] = True
-            st.balloons()
-            st.success("✨ Subscription Successful! Welcome to Pro.")
-            st.rerun()
 
-    with p_col2:
-        st.markdown("""
-        <div class='price-card' style='border-color: #2563EB; background: #F8FAFC;'>
-            <span style='background: #2563EB; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;'>POPULAR</span>
-            <h3 style='margin-top: 5px;'>6-Month Plan</h3>
-            <div class='price-value'>$140 <span style='font-size: 14px; color: #64748B;'>/ 6 mo</span></div>
-            <p style='color: #64748B; font-size: 13px;'>Save ~20%.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Subscribe 6 Months", key="btn_6m", use_container_width=True):
-            st.session_state["is_subscribed"] = True
-            st.balloons()
-            st.success("✨ Subscription Successful! Welcome to Pro.")
-            st.rerun()
+with col_text:
+    st.markdown('<span style="background: #eff6ff; color: #2563EB; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 13px;">✨ DataPilot AI — AI-Powered Data Analysis Platform</span>', unsafe_allow_html=True)
+    st.title("Turn your raw data into insights in minutes.")
+    st.markdown("Upload your CSV or Excel file and let **DataPilot AI** clean, analyze, visualize, and report your data automatically.")
 
-    with p_col3:
-        st.markdown("""
-        <div class='price-card'>
-            <h3>Annual Plan</h3>
-            <div class='price-value'>$260 <span style='font-size: 14px; color: #64748B;'>/ yr</span></div>
-            <p style='color: #64748B; font-size: 13px;'>Best value for teams.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Subscribe Annually", key="btn_yr", use_container_width=True):
-            st.session_state["is_subscribed"] = True
-            st.balloons()
-            st.success("✨ Subscription Successful! Welcome to Pro.")
-            st.rerun()
+st.markdown("<br>", unsafe_allow_html=True)
+
+# ==========================================
+# Quick Action Buttons & Status
+# ==========================================
+act_c1, act_c2, act_c3 = st.columns([1.2, 1.2, 1.8])
+
+with act_c1:
+    if st.button("🚀 Upload Dataset", use_container_width=True, type="primary"):
+        st.switch_page("pages/2_Upload.py")
+
+with act_c2:
+    if st.button("✨ Try Demo Dataset", use_container_width=True):
+        import pandas as pd
+        import numpy as np
+        # تحميل بيانات ديمو افتراضية سريعة
+        np.random.seed(42)
+        demo_df = pd.DataFrame({
+            "CustomerID": [f"CUST-{1000+i}" for i in range(100)],
+            "Age": np.random.randint(18, 70, 100),
+            "Income": np.random.randint(30000, 120000, 100),
+            "Score": np.random.uniform(10, 100, 100),
+            "Category": np.random.choice(["A", "B", "C"], 100)
+        })
+        st.session_state["df"] = demo_df.copy()
+        st.session_state["original_df"] = demo_df.copy()
+        st.session_state["file_name"] = "demo_dataset.csv"
+        st.session_state["cleaning_log"] = []
+        st.success("🎉 Demo dataset loaded successfully!")
+        st.switch_page("pages/3_Data_Overview.py")
+
+with act_c3:
+    if "df" in st.session_state and st.session_state["df"] is not None:
+        st.markdown(f'<div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px 15px; border-radius: 8px; font-size: 14px; font-weight: 500;">📁 Active Dataset: <b>{st.session_state.get("file_name", "Dataset")}</b></div>', unsafe_allow_html=True)
+    else:
+        st.markdown('<div style="background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; padding: 10px 15px; border-radius: 8px; font-size: 14px; font-weight: 500;">📂 No Active Dataset: Upload CSV or click \'Try Demo Dataset\'.</div>', unsafe_allow_html=True)
 
 st.divider()
-st.info("💡 DataPilot AI gives you automated insights, data cleaning, and instant AI analytics.")
+
+# ==========================================
+# Explore Platform Modules & Pipeline
+# ==========================================
+st.subheader("🧭 Explore Platform Modules & Pipeline")
+
+# الصف الأول من الموديولات
+m1, m2, m3 = st.columns(3)
+with m1:
+    st.markdown("""
+    <div style='background: #eff6ff; border-left: 5px solid #2563EB; padding: 18px; border-radius: 10px; height: 140px;'>
+        <h4 style='color: #1e3a8a; margin-top:0;'>1️⃣ Upload & Inspect</h4>
+        <p style='color: #475569; font-size: 13px;'>Seamlessly ingest CSV and Excel files with automated encoding detection and structural verification.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with m2:
+    st.markdown("""
+    <div style='background: #f0fdf4; border-left: 5px solid #16a34a; padding: 18px; border-radius: 10px; height: 140px;'>
+        <h4 style='color: #14532d; margin-top:0;'>2️⃣ Data Overview</h4>
+        <p style='color: #475569; font-size: 13px;'>Power BI-style diagnostics featuring a Data Health Score (0-100), quality metrics, and descriptive stats.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with m3:
+    st.markdown("""
+    <div style='background: #fef2f2; border-left: 5px solid #dc2626; padding: 18px; border-radius: 10px; height: 140px;'>
+        <h4 style='color: #7f1d1d; margin-top:0;'>3️⃣ Advanced Cleaning</h4>
+        <p style='color: #475569; font-size: 13px;'>8-phase comprehensive sanitation: text normalization, word mapping, currency parsing, and outlier caps.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# الصف الثاني من الموديولات
+m4, m5, m6 = st.columns(3)
+with m4:
+    st.markdown("""
+    <div style='background: #fffbeb; border-left: 5px solid #d97706; padding: 18px; border-radius: 10px; height: 140px;'>
+        <h4 style='color: #78350f; margin-top:0;'>4️⃣ Feature Engineering</h4>
+        <p style='color: #475569; font-size: 13px;'>Perform feature scaling, categorical encoding, datetime extraction, and custom column engineering.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with m5:
+    st.markdown("""
+    <div style='background: #f5f3ff; border-left: 5px solid #7c3aed; padding: 18px; border-radius: 10px; height: 140px;'>
+        <h4 style='color: #3b0764; margin-top:0;'>5️⃣ Exploratory Analysis</h4>
+        <p style='color: #475569; font-size: 13px;'>Uncover patterns, correlations, distributions, and multi-variable trends via interactive Plotly charts.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with m6:
+    st.markdown("""
+    <div style='background: #ecfeff; border-left: 5px solid #0891b2; padding: 18px; border-radius: 10px; height: 140px;'>
+        <h4 style='color: #164e63; margin-top:0;'>6️⃣ Interactive Dashboard</h4>
+        <p style='color: #475569; font-size: 13px;'>Dynamic executive scorecards, KPI filters, treemaps, and custom scatter matrices.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# الصف الثالث من الموديولات
+m7, m8, m9 = st.columns(3)
+with m7:
+    st.markdown("""
+    <div style='background: #fff1f2; border-left: 5px solid #e11d48; padding: 18px; border-radius: 10px; height: 140px;'>
+        <h4 style='color: #881337; margin-top:0;'>7️⃣ AI Analyst</h4>
+        <p style='color: #475569; font-size: 13px;'>AI-powered insights, anomaly detection, automated summaries, and intelligent recommendations.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with m8:
+    st.markdown("""
+    <div style='background: #f0fdf4; border-left: 5px solid #059669; padding: 18px; border-radius: 10px; height: 140px;'>
+        <h4 style='color: #064e3b; margin-top:0;'>8️⃣ Report Generator</h4>
+        <p style='color: #475569; font-size: 13px;'>Professional PDF reports with charts, insights, KPIs, and executive summary sections.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with m9:
+    st.markdown("""
+    <div style='background: #faf5ff; border-left: 5px solid #9333ea; padding: 18px; border-radius: 10px; height: 140px;'>
+        <h4 style='color: #581c87; margin-top:0;'>9️⃣ Export & Share</h4>
+        <p style='color: #475569; font-size: 13px;'>Export cleaned data, dashboards, and reports. Share insights and collaborate effortlessly.</p>
+    </div>
+    """, unsafe_allow_html=True)
