@@ -288,7 +288,6 @@ with btn_col2:
         
         st.session_state["df"] = demo_df
         st.session_state["file_name"] = "Demo_Sales_Dataset.csv"
-        # تفعيل وضع التجربة للديمو فقط ليمر بسلاسة
         st.session_state["unlocked_demo"] = True
         
         st.toast("⚡ Demo Dataset Loaded Successfully!", icon="🎉")
@@ -309,7 +308,6 @@ st.divider()
 # ==========================================
 st.subheader("🎨 Explore Platform Modules & Pipeline")
 
-# --- Row 1 (Steps 1, 2, 3) ---
 c1, c2, c3 = st.columns(3)
 with c1:
     st.markdown("""
@@ -335,7 +333,6 @@ with c3:
     </div>
     """, unsafe_allow_html=True)
 
-# --- Row 2 (Steps 4, 5, 6) ---
 c4, c5, c6 = st.columns(3)
 with c4:
     st.markdown("""
@@ -361,7 +358,6 @@ with c6:
     </div>
     """, unsafe_allow_html=True)
 
-# --- Row 3 (Steps 7, 8, 9) ---
 c7, c8, c9 = st.columns(3)
 with c7:
     st.markdown("""
@@ -390,7 +386,7 @@ with c9:
 st.divider()
 
 # ==========================================
-# 💳 Pricing & Paddle Checkout Section
+# 💳 Pricing & Paddle Checkout Section (Optimized & Fixed)
 # ==========================================
 st.subheader("💳 Flexible Pricing Plans")
 
@@ -399,20 +395,18 @@ PRICE_MONTHLY = "pri_01m19xbb6ktbg8y28k9p5dvjyh"
 PRICE_6MONTHS = "pri_01m19x6w138sn1sr3cnjfn90cn"
 PRICE_ANNUAL = "pri_01m19x068bamgcp9agk0rcf9h4"
 
-def render_paddle_button(price_id, button_text):
-    html_code = f"""
+# Load Paddle SDK globally once using components to prevent iframe collision
+components.html(f"""
     <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
     <script>
-      Paddle.Environment.set('live'); 
-      Paddle.Initialize({{ token: '{PADDLE_CLIENT_TOKEN}' }});
-
-      function openCheckout() {{
-        Paddle.Checkout.open({{
-          items: [{{ priceId: '{price_id}', quantity: 1 }}]
-        }});
-      }}
+        Paddle.Environment.set('live'); 
+        Paddle.Initialize({{ token: '{PADDLE_CLIENT_TOKEN}' }});
     </script>
-    <button onclick="openCheckout()" style="
+""", height=0)
+
+def render_paddle_button(price_id, button_text):
+    html_code = f"""
+    <button onclick="Paddle.Checkout.open({{ items: [{{ priceId: '{price_id}', quantity: 1 }}] }})" style="
         background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
         color: white;
         padding: 12px 20px;
@@ -428,7 +422,7 @@ def render_paddle_button(price_id, button_text):
         {button_text}
     </button>
     """
-    components.html(html_code, height=60)
+    components.html(html_code, height=55)
 
 p_col1, p_col2, p_col3 = st.columns(3)
 
