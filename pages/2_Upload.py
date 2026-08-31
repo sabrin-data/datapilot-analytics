@@ -2,6 +2,7 @@ import io
 import chardet
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 from utils.translations import init_language, t
 
 # ==========================================
@@ -29,6 +30,86 @@ st.write(t("sub_title") if t("sub_title") != "sub_title" else "Upload your datas
 st.divider()
 
 # ==========================================
+# 🔒 Paddle Paywall Configuration (للتحقق من اشتراك المستخدم)
+# ==========================================
+PADDLE_CLIENT_TOKEN = "live_348aab7f372a0cc9cce3a87e467"
+PRICE_MONTHLY = "pri_01m19xbb6ktbg8y28k9p5dvjyh"
+PRICE_6MONTHS = "pri_01m19x6w138sn1sr3cnjfn90cn"
+PRICE_ANNUAL = "pri_01m19x068bamgcp9agk0rcf9h4"
+
+def render_paddle_checkout_wall():
+    st.markdown("""
+        <div style="background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%); border: 2px solid #EF4444; border-radius: 16px; padding: 30px; text-align: center; margin: 20px 0; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);">
+            <h2 style="color: #991B1B; margin-top: 0;">🔒 Subscription Required to Upload Files</h2>
+            <p style="color: #7F1D1D; font-size: 16px; margin-bottom: 20px;">
+                To upload and process your custom datasets, an active DataPilot AI subscription is required. Choose a plan below to unlock full access.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    def render_paywall_paddle_button(price_id, button_text):
+        html_code = f"""
+        <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+        <script>
+          Paddle.Environment.set('live'); 
+          Paddle.Initialize({{ token: '{PADDLE_CLIENT_TOKEN}' }});
+
+          function openCheckout() {{
+            Paddle.Checkout.open({{
+              items: [{{ priceId: '{price_id}', quantity: 1 }}]
+            }});
+          }}
+        </script>
+        <button onclick="openCheckout()" style="
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.3s ease;
+        ">
+            {button_text}
+        </button>
+        """
+        components.html(html_code, height=60)
+
+    p_col1, p_col2, p_col3 = st.columns(3)
+    with p_col1:
+        st.markdown("""
+        <div class='price-card' style='background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; text-align: center;'>
+            <h3>Monthly</h3>
+            <div style='font-size: 28px; font-weight: bold; color: #0f172a; margin: 10px 0;'>$29</div>
+        </div>
+        """, unsafe_allow_html=True)
+        render_paywall_paddle_button(PRICE_MONTHLY, "Subscribe Monthly")
+
+    with p_col2:
+        st.markdown("""
+        <div class='price-card' style='background: #fff; border: 2px solid #2563EB; border-radius: 12px; padding: 20px; text-align: center;'>
+            <h3>6-Month</h3>
+            <div style='font-size: 28px; font-weight: bold; color: #2563EB; margin: 10px 0;'>$140</div>
+        </div>
+        """, unsafe_allow_html=True)
+        render_paywall_paddle_button(PRICE_6MONTHS, "Subscribe 6 Months")
+
+    with p_col3:
+        st.markdown("""
+        <div class='price-card' style='background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; text-align: center;'>
+            <h3>Annual</h3>
+            <div style='font-size: 28px; font-weight: bold; color: #0f172a; margin: 10px 0;'>$260</div>
+        </div>
+        """, unsafe_allow_html=True)
+        render_paywall_paddle_button(PRICE_ANNUAL, "Subscribe Annually")
+
+# التحقق مما إذا كان المستخدم قد دخل عن طريق الديمو المجاني أو اشترك مسبقاً
+is_unlocked = st.session_state.get("unlocked_demo", False) or st.session_state.get("is_subscribed", False)
+
+# ==========================================
 # 1. Helper Function: Safe File Loader
 # ==========================================
 def load_dataset(uploaded_file):
@@ -36,12 +117,10 @@ def load_dataset(uploaded_file):
     filename = uploaded_file.name
     
     if filename.endswith(".csv"):
-        # Detect character encoding automatically
         raw_bytes = uploaded_file.getvalue()
-        detected = chardet.detect(raw_bytes[:50000])  # Sample first 50KB
+        detected = chardet.detect(raw_bytes[:50000])  
         encoding_detected = detected.get("encoding", "utf-8")
         
-        # Fallback list if detected encoding fails
         encodings_to_try = [encoding_detected, "utf-8", "utf-8-sig", "latin1", "cp1252", "iso-8859-1"]
         
         for enc in encodings_to_try:
@@ -54,7 +133,6 @@ def load_dataset(uploaded_file):
             except (UnicodeDecodeError, Exception):
                 continue
         
-        # Final attempt with error coercion if standard encodings fail
         uploaded_file.seek(0)
         df = pd.read_csv(uploaded_file, encoding="utf-8", errors="replace")
         return df, filename, "utf-8 (coerced)"
@@ -77,6 +155,11 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
+    # إذا لم يكن المستخدم مشتركاً أو لم يدخل عبر الديمو، نظهر له شاشة الدفع ونمنع معالجة الملف
+    if not is_unlocked:
+        render_paddle_checkout_wall()
+        st.stop()  # إيقاف تنفيذ الصفحة هنا لحين إتمام الدفع أو الاشتراك
+
     try:
         with st.spinner("Parsing dataset and verifying structural integrity..."):
             df, filename, used_encoding = load_dataset(uploaded_file)
@@ -85,7 +168,7 @@ if uploaded_file is not None:
         st.session_state["df"] = df.copy()
         st.session_state["original_df"] = df.copy()
         st.session_state["file_name"] = filename
-        st.session_state["cleaning_log"] = []  # إعادة إعادة ضبط سجل التنظيف للملف الجديد
+        st.session_state["cleaning_log"] = []  
 
         st.success(f"🎉 Dataset **'{filename}'** successfully uploaded and loaded into active memory!")
 
