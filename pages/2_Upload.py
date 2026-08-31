@@ -30,7 +30,7 @@ st.write(t("sub_title") if t("sub_title") != "sub_title" else "Upload your datas
 st.divider()
 
 # ==========================================
-# 🔒 Paddle Paywall Configuration (للتحقق من اشتراك المستخدم)
+# 🔒 Paddle Paywall Configuration (شرط الدفع والاشتراك لرفع الملفات)
 # ==========================================
 PADDLE_CLIENT_TOKEN = "live_348aab7f372a0cc9cce3a87e467"
 PRICE_MONTHLY = "pri_01m19xbb6ktbg8y28k9p5dvjyh"
@@ -40,9 +40,9 @@ PRICE_ANNUAL = "pri_01m19x068bamgcp9agk0rcf9h4"
 def render_paddle_checkout_wall():
     st.markdown("""
         <div style="background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%); border: 2px solid #EF4444; border-radius: 16px; padding: 30px; text-align: center; margin: 20px 0; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);">
-            <h2 style="color: #991B1B; margin-top: 0;">🔒 Subscription Required to Upload Files</h2>
+            <h2 style="color: #991B1B; margin-top: 0;">🔒 Subscription Required to Upload Custom Files</h2>
             <p style="color: #7F1D1D; font-size: 16px; margin-bottom: 20px;">
-                To upload and process your custom datasets, an active DataPilot AI subscription is required. Choose a plan below to unlock full access.
+                To upload and process your personal datasets from your computer, an active DataPilot AI subscription is required. Choose a plan below to unlock full access.
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -106,8 +106,8 @@ def render_paddle_checkout_wall():
         """, unsafe_allow_html=True)
         render_paywall_paddle_button(PRICE_ANNUAL, "Subscribe Annually")
 
-# التحقق مما إذا كان المستخدم قد دخل عن طريق الديمو المجاني أو اشترك مسبقاً
-is_unlocked = st.session_state.get("unlocked_demo", False) or st.session_state.get("is_subscribed", False)
+# التحقق حصرياً من اشتراك المستخدم الحقيقي (تجاهل حالة الديمو عند رفع ملف من الجهاز)
+is_subscribed = st.session_state.get("is_subscribed", False)
 
 # ==========================================
 # 1. Helper Function: Safe File Loader
@@ -155,10 +155,10 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
-    # إذا لم يكن المستخدم مشتركاً أو لم يدخل عبر الديمو، نظهر له شاشة الدفع ونمنع معالجة الملف
-    if not is_unlocked:
+    # إذا حاول المستخدم رفع ملف من جهازه ولم يكن مشتركاً، نمنعه ونظهر له بوابة الدفع فوراً
+    if not is_subscribed:
         render_paddle_checkout_wall()
-        st.stop()  # إيقاف تنفيذ الصفحة هنا لحين إتمام الدفع أو الاشتراك
+        st.stop()  # إيقاف التنفيذ هنا لمنع معالجة الملف
 
     try:
         with st.spinner("Parsing dataset and verifying structural integrity..."):
@@ -213,7 +213,7 @@ if uploaded_file is not None:
         st.error(f"❌ Failed to parse file: {str(e)}")
 
 else:
-    # Check if a dataset was previously loaded in the session
+    # Check if a dataset was previously loaded in the session (مثل بيانات الديمو أو ملفات سابقة)
     if "df" in st.session_state and st.session_state["df"] is not None:
         st.info(f"📁 Active Dataset in Memory: **{st.session_state.get('file_name', 'Dataset')}** ({st.session_state['df'].shape[0]:,} rows × {st.session_state['df'].shape[1]} columns)")
         
