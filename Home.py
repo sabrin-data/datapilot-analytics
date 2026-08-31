@@ -87,21 +87,6 @@ st.markdown("""
             border-radius: 16px; padding: 22px; height: 100%; margin-bottom: 20px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid rgba(255, 255, 255, 0.6);
         }
-        .card-1 { background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border-left: 5px solid #3B82F6; }
-        .card-2 { background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); border-left: 5px solid #22C55E; }
-        .card-3 { background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%); border-left: 5px solid #EF4444; }
-        .card-4 { background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border-left: 5px solid #F59E0B; }
-        .card-5 { background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%); border-left: 5px solid #8B5CF6; }
-        .card-6 { background: linear-gradient(135deg, #ECFEFF 0%, #CFFAFE 100%); border-left: 5px solid #06B6D4; }
-        .card-7 { background: linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 100%); border-left: 5px solid #EC4899; }
-        .card-8 { background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%); border-left: 5px solid #14B8A6; }
-        .card-9 { background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%); border-left: 5px solid #A855F7; }
-
-        .cap-num { color: white; font-weight: 800; padding: 4px 10px; border-radius: 8px; margin-right: 10px; font-size: 14px; }
-        .num-1 { background-color: #3B82F6; } .num-2 { background-color: #22C55E; } .num-3 { background-color: #EF4444; }
-        .num-4 { background-color: #F59E0B; } .num-5 { background-color: #8B5CF6; } .num-6 { background-color: #06B6D4; }
-        .num-7 { background-color: #EC4899; } .num-8 { background-color: #14B8A6; } .num-9 { background-color: #A855F7; }
-
         .price-card {
             background: #FFFFFF; border-radius: 16px; padding: 24px; text-align: center;
             border: 2px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
@@ -156,61 +141,64 @@ with col_status:
 st.divider()
 
 # ==========================================
-# 💳 Pricing & Paddle Checkout Section (Direct Links)
+# 💳 Pricing & Subscription Simulation Section
 # ==========================================
 st.subheader("💳 Flexible Pricing Plans")
 
-# روابط الدفع المباشرة مرتبطة بالـ Price IDs الخاصة بكِ
-CHECKOUT_MONTHLY = "https://pay.paddle.com/checkout?prices=pri_01m19x068bamgcp9agk0rcf9h4" 
-CHECKOUT_6MONTHS = "https://pay.paddle.com/checkout?prices=pri_01m19x6w138sn1sr3cnjfn90cn" 
-CHECKOUT_ANNUAL = "https://pay.paddle.com/checkout?prices=pri_01m19xbb6ktbg8y28k9p5dvjyh"  
+# التحقق من حالة الاشتراك المخزنة في الجلسة
+if "is_subscribed" not in st.session_state:
+    st.session_state["is_subscribed"] = False
 
-def render_paddle_button(checkout_url, button_text):
-    st.markdown(f"""
-    <a href="{checkout_url}" target="_blank" style="text-decoration: none; display: block; width: 100%;">
-        <div style="
-            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-            color: white; padding: 12px 20px; border-radius: 10px;
-            text-align: center; font-weight: bold; font-size: 15px; width: 100%;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-        ">
-            {button_text} ↗
+if st.session_state["is_subscribed"]:
+    st.success("🎉 **Active Subscription:** You are currently subscribed to DataPilot AI Pro! All features are fully unlocked.")
+    if st.button("Cancel / Reset Subscription"):
+        st.session_state["is_subscribed"] = False
+        st.rerun()
+else:
+    p_col1, p_col2, p_col3 = st.columns(3)
+
+    with p_col1:
+        st.markdown("""
+        <div class='price-card'>
+            <h3>Monthly Plan</h3>
+            <div class='price-value'>$29 <span style='font-size: 14px; color: #64748B;'>/ mo</span></div>
+            <p style='color: #64748B; font-size: 13px;'>Billed monthly.</p>
         </div>
-    </a>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+        if st.button("Subscribe Monthly", key="btn_m", use_container_width=True):
+            st.session_state["is_subscribed"] = True
+            st.balloons()
+            st.success("✨ Subscription Successful! Welcome to Pro.")
+            st.rerun()
 
-p_col1, p_col2, p_col3 = st.columns(3)
+    with p_col2:
+        st.markdown("""
+        <div class='price-card' style='border-color: #2563EB; background: #F8FAFC;'>
+            <span style='background: #2563EB; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;'>POPULAR</span>
+            <h3 style='margin-top: 5px;'>6-Month Plan</h3>
+            <div class='price-value'>$140 <span style='font-size: 14px; color: #64748B;'>/ 6 mo</span></div>
+            <p style='color: #64748B; font-size: 13px;'>Save ~20%.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Subscribe 6 Months", key="btn_6m", use_container_width=True):
+            st.session_state["is_subscribed"] = True
+            st.balloons()
+            st.success("✨ Subscription Successful! Welcome to Pro.")
+            st.rerun()
 
-with p_col1:
-    st.markdown("""
-    <div class='price-card'>
-        <h3>Monthly Plan</h3>
-        <div class='price-value'>$29 <span style='font-size: 14px; color: #64748B;'>/ mo</span></div>
-        <p style='color: #64748B; font-size: 13px;'>Billed monthly.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    render_paddle_button(CHECKOUT_MONTHLY, "Subscribe Monthly")
-
-with p_col2:
-    st.markdown("""
-    <div class='price-card' style='border-color: #2563EB; background: #F8FAFC;'>
-        <span style='background: #2563EB; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;'>POPULAR</span>
-        <h3 style='margin-top: 5px;'>6-Month Plan</h3>
-        <div class='price-value'>$140 <span style='font-size: 14px; color: #64748B;'>/ 6 mo</span></div>
-        <p style='color: #64748B; font-size: 13px;'>Save ~20%.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    render_paddle_button(CHECKOUT_6MONTHS, "Subscribe 6 Months")
-
-with p_col3:
-    st.markdown("""
-    <div class='price-card'>
-        <h3>Annual Plan</h3>
-        <div class='price-value'>$260 <span style='font-size: 14px; color: #64748B;'>/ yr</span></div>
-        <p style='color: #64748B; font-size: 13px;'>Best value for teams.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    render_paddle_button(CHECKOUT_ANNUAL, "Subscribe Annually")
+    with p_col3:
+        st.markdown("""
+        <div class='price-card'>
+            <h3>Annual Plan</h3>
+            <div class='price-value'>$260 <span style='font-size: 14px; color: #64748B;'>/ yr</span></div>
+            <p style='color: #64748B; font-size: 13px;'>Best value for teams.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Subscribe Annually", key="btn_yr", use_container_width=True):
+            st.session_state["is_subscribed"] = True
+            st.balloons()
+            st.success("✨ Subscription Successful! Welcome to Pro.")
+            st.rerun()
 
 st.divider()
 st.info("👈 Use the navigation sidebar on the left to start exploring your dataset!")
