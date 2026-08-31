@@ -160,10 +160,10 @@ st.divider()
 # ==========================================
 st.subheader("💳 Flexible Pricing Plans")
 
-# ضعي هنا روابط الشراء المباشرة التي تنسخينها من لوحة تحكم Paddle
-CHECKOUT_MONTHLY = "https://buy.paddle.com/..." 
-CHECKOUT_6MONTHS = "https://buy.paddle.com/..." 
-CHECKOUT_ANNUAL = "https://buy.paddle.com/..."  
+# روابط الدفع المباشرة مرتبطة بالـ Price IDs الخاصة بكِ
+CHECKOUT_MONTHLY = "https://pay.paddle.com/checkout?prices=pri_01m19x068bamgcp9agk0rcf9h4" 
+CHECKOUT_6MONTHS = "https://pay.paddle.com/checkout?prices=pri_01m19x6w138sn1sr3cnjfn90cn" 
+CHECKOUT_ANNUAL = "https://pay.paddle.com/checkout?prices=pri_01m19xbb6ktbg8y28k9p5dvjyh"  
 
 def render_paddle_button(checkout_url, button_text):
     st.markdown(f"""
