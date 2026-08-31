@@ -288,8 +288,11 @@ with btn_col2:
         
         st.session_state["df"] = demo_df
         st.session_state["file_name"] = "Demo_Sales_Dataset.csv"
+        # تفعيل وضع التجربة للديمو فقط ليمر بسلاسة
+        st.session_state["unlocked_demo"] = True
+        
         st.toast("⚡ Demo Dataset Loaded Successfully!", icon="🎉")
-        st.rerun()
+        st.switch_page("pages/3_Data_Overview.py")
 
 with col_status:
     if "df" in st.session_state and st.session_state["df"] is not None:
