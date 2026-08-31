@@ -386,43 +386,36 @@ with c9:
 st.divider()
 
 # ==========================================
-# 💳 Pricing & Paddle Checkout Section (Optimized & Fixed)
+# 💳 Pricing & Paddle Checkout Section (Direct Link Optimized)
 # ==========================================
 st.subheader("💳 Flexible Pricing Plans")
 
-PADDLE_CLIENT_TOKEN = "live_348aab7f372a0cc9cce3a87e467"
 PRICE_MONTHLY = "pri_01m19xbb6ktbg8y28k9p5dvjyh"
 PRICE_6MONTHS = "pri_01m19x6w138sn1sr3cnjfn90cn"
 PRICE_ANNUAL = "pri_01m19x068bamgcp9agk0rcf9h4"
 
-# Load Paddle SDK globally once using components to prevent iframe collision
-components.html(f"""
-    <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
-    <script>
-        Paddle.Environment.set('live'); 
-        Paddle.Initialize({{ token: '{PADDLE_CLIENT_TOKEN}' }});
-    </script>
-""", height=0)
-
 def render_paddle_button(price_id, button_text):
-    html_code = f"""
-    <button onclick="Paddle.Checkout.open({{ items: [{{ priceId: '{price_id}', quantity: 1 }}] }})" style="
-        background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-        color: white;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 15px;
-        width: 100%;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-        transition: all 0.3s ease;
-    ">
-        {button_text}
-    </button>
-    """
-    components.html(html_code, height=55)
+    # استخدام رابط الشراء المباشر لضمان فتح صفحة الدفع في تبويب جديد دون حظر
+    checkout_url = f"https://buy.paddle.com/product/{price_id}"
+    
+    components.html(f"""
+    <a href="{checkout_url}" target="_blank" style="text-decoration: none;">
+        <div style="
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 15px;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.3s ease;
+        ">
+            {button_text} ↗
+        </div>
+    </a>
+    """, height=55)
 
 p_col1, p_col2, p_col3 = st.columns(3)
 
