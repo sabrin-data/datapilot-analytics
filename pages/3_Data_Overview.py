@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit.components.v1 as components
 from utils.translations import init_language, t
 
 # ==========================================
@@ -13,10 +14,6 @@ st.set_page_config(
     page_icon="📋",
     layout="wide"
 )
-
-# 🔒 Paywall / Subscription Check (Freemium Gate)
-from utils.paywall import check_subscription
-check_subscription("Data Overview & Diagnostics")
 
 # يقرأ اللغة المختارة ويظهر القائمة الجانبية
 init_language()
@@ -30,6 +27,92 @@ except FileNotFoundError:
 
 st.title("📋 Automated Data Overview & Health Audit")
 st.write(t("sub_title") if t("sub_title") != "sub_title" else "Comprehensive dataset diagnostics, automated statistical profiling, and AI data health assessment.")
+
+# ==========================================
+# 🔒 Paddle Paywall Configuration (شرط الدفع لرفع الملفات الشخصية)
+# ==========================================
+PADDLE_CLIENT_TOKEN = "live_348aab7f372a0cc9cce3a87e467"
+PRICE_MONTHLY = "pri_01m19xbb6ktbg8y28k9p5dvjyh"
+PRICE_6MONTHS = "pri_01m19x6w138sn1sr3cnjfn90cn"
+PRICE_ANNUAL = "pri_01m19x068bamgcp9agk0rcf9h4"
+
+def render_paddle_checkout_wall():
+    st.markdown("""
+        <div style="background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%); border: 2px solid #EF4444; border-radius: 16px; padding: 30px; text-align: center; margin: 20px 0; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);">
+            <h2 style="color: #991B1B; margin-top: 0;">🔒 Subscription Required to Process Custom Files</h2>
+            <p style="color: #7F1D1D; font-size: 16px; margin-bottom: 20px;">
+                To analyze and process custom datasets uploaded from your device, an active DataPilot AI subscription is required. Choose a plan below to unlock full access.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    def render_paywall_paddle_button(price_id, button_text):
+        html_code = f"""
+        <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+        <script>
+          Paddle.Environment.set('live'); 
+          Paddle.Initialize({{ token: '{PADDLE_CLIENT_TOKEN}' }});
+
+          function openCheckout() {{
+            Paddle.Checkout.open({{
+              items: [{{ priceId: '{price_id}', quantity: 1 }}]
+            }});
+          }}
+        </script>
+        <button onclick="openCheckout()" style="
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.3s ease;
+        ">
+            {button_text}
+        </button>
+        """
+        components.html(html_code, height=60)
+
+    p_col1, p_col2, p_col3 = st.columns(3)
+    with p_col1:
+        st.markdown("""
+        <div class='price-card' style='background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; text-align: center;'>
+            <h3>Monthly</h3>
+            <div style='font-size: 28px; font-weight: bold; color: #0f172a; margin: 10px 0;'>$29</div>
+        </div>
+        """, unsafe_allow_html=True)
+        render_paywall_paddle_button(PRICE_MONTHLY, "Subscribe Monthly")
+
+    with p_col2:
+        st.markdown("""
+        <div class='price-card' style='background: #fff; border: 2px solid #2563EB; border-radius: 12px; padding: 20px; text-align: center;'>
+            <h3>6-Month</h3>
+            <div style='font-size: 28px; font-weight: bold; color: #2563EB; margin: 10px 0;'>$140</div>
+        </div>
+        """, unsafe_allow_html=True)
+        render_paywall_paddle_button(PRICE_6MONTHS, "Subscribe 6 Months")
+
+    with p_col3:
+        st.markdown("""
+        <div class='price-card' style='background: #fff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px; text-align: center;'>
+            <h3>Annual</h3>
+            <div style='font-size: 28px; font-weight: bold; color: #0f172a; margin: 10px 0;'>$260</div>
+        </div>
+        """, unsafe_allow_html=True)
+        render_paywall_paddle_button(PRICE_ANNUAL, "Subscribe Annually")
+
+# التحقق: إذا كان الملف مرفوعاً من الجهاز ولم يكن المستخدم مشتركاً والديمو غير مفعل
+is_subscribed = st.session_state.get("is_subscribed", False)
+is_demo = st.session_state.get("unlocked_demo", False)
+is_uploaded_from_device = st.session_state.get("uploaded_from_device", False)
+
+if is_uploaded_from_device and not is_subscribed:
+    render_paddle_checkout_wall()
+    st.stop()
 
 # ==========================================
 # 1. Check Dataset Availability
