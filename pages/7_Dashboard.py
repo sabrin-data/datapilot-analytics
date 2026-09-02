@@ -254,5 +254,5 @@ st.divider()
 # Transition Button
 col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
 with col_b2:
-    if st.button("Proceed to Machine Learning Studio ➔", type="primary", use_container_width=True, key="btn_proceed_ml"):
-        st.switch_page("pages/8_Machine_Learning.py")
+    if st.button("Proceed to AI Analysis ➔", type="primary", use_container_width=True, key="btn_proceed_ml"):
+        st.switch_page("pages/8_AI_Analysis.py")  # أو اسم الملف الفعلي لديك لصفحة AI Analysis
