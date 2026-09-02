@@ -1,20 +1,17 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.express as px
 from utils.translations import init_language, t
 
 # ==========================================
-# 0. Page Configuration & Language Init
+# 0. Page Configuration (Must be First)
 # ==========================================
 st.set_page_config(
-    page_title="Feature Engineering Studio",
-    page_icon="⚙️",
+    page_title="Executive Dashboard - DataPilot AI", 
+    page_icon="📊",
     layout="wide"
 )
-
-# 🔒 Paywall / Subscription Check (Freemium Gate)
-from utils.paywall import check_subscription
-check_subscription("Feature Engineering Studio")
 
 # يقرأ اللغة المختارة ويظهر القائمة الجانبية
 init_language()
@@ -26,223 +23,188 @@ try:
 except FileNotFoundError:
     pass
 
-st.title("⚙️ Advanced Feature Engineering Studio")
-st.write("Construct new predictive indicators, apply mathematical transformations, bin continuous variables, and encode features.")
+st.title("📊 Executive Dashboard & AI Assistant")
 
 # ==========================================
 # 1. Check Dataset Availability
 # ==========================================
 if "df" not in st.session_state or st.session_state["df"] is None:
-    st.warning("📂 Please upload a dataset first from the Upload page.")
+    st.warning("⚠️ Please upload a dataset first in the Upload page!")
     st.stop()
 
 df = st.session_state["df"]
-file_name = st.session_state.get("file_name", "Dataset")
 
-st.info(f"📁 Active Dataset: **{file_name}** | Shape: **{df.shape[0]:,} rows × {df.shape[1]} columns**")
-st.divider()
-
-# Separate data types
-num_cols = df.select_dtypes(include=np.number).columns.tolist()
-cat_cols = df.select_dtypes(include=["object", "category", "string"]).columns.tolist()
+# تصنيف الأعمدة
+categorical_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
 
 # ==========================================
-# 🧪 Module 1: Custom Advanced Multi-Column Formula
+# 2. SIDEBAR: EXCEL-LIKE SLICERS & FILTERS
 # ==========================================
-with st.expander("🧪 Module 1: Custom Advanced Formula Builder (Multi-Column)", expanded=True):
-    st.markdown("Write dynamic arithmetic formulas using exact column names. Example: `(Quantity * Price_Per_Unit) - Discount`")
-    
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        custom_formula = st.text_input(
-            "Enter Formula Expression:", 
-            placeholder="e.g. Quantity * Price_Per_Unit",
-            key="custom_formula_expr"
+st.sidebar.markdown("### 🎛️ Executive Slicers & Filters")
+filtered_df = df.copy()
+
+# فلترة ذكية: استثناء أعمدة الـ ID من السلايسر التلقائي لتجنب تفريغ البيانات
+slicer_categorical_cols = [
+    col for col in categorical_cols 
+    if not any(id_kw in col.lower() for id_kw in ['id', 'code', 'index', 'txn'])
+]
+
+# إذا لم نجد أعمدة نصية عادية نستخدم الأحدث، بحد أقصى 3 أعمدة
+target_slicers = slicer_categorical_cols[:3] if slicer_categorical_cols else categorical_cols[:3]
+
+if target_slicers:
+    for col in target_slicers:
+        unique_vals = df[col].dropna().unique().tolist()
+        selected_vals = st.sidebar.multiselect(
+            f"Filter by {col}", 
+            options=unique_vals, 
+            default=unique_vals,
+            key=f"filter_{col}"
         )
-    with col2:
-        new_custom_col_name = st.text_input(
-            "New Column Name:", 
-            value="Custom_Feature",
-            key="custom_formula_col_name"
+        if selected_vals:
+            filtered_df = filtered_df[filtered_df[col].isin(selected_vals)]
+else:
+    st.sidebar.info("No categorical columns available for slicing.")
+
+# ==========================================
+# 3. TOP KPIs SECTION (منطق ذكي ومعدّل لمنع التكرار)
+# ==========================================
+st.markdown("### 📈 Key Performance Indicators (KPIs)")
+
+if not filtered_df.empty:
+    kpi_cols = st.columns(4)
+    
+    # 1. إجمالي عدد العمليات/الطلبيات
+    with kpi_cols[0]:
+        st.metric(
+            label="Total Transactions",
+            value=f"{len(filtered_df):,}",
+            delta="Total Records"
         )
         
-    st.caption(f"📌 **Available Numeric Columns:** `{', '.join(num_cols)}`")
-
-    if st.button("⚡ Apply Advanced Formula", type="primary", key="btn_apply_formula"):
-        if not custom_formula.strip():
-            st.warning("Please enter a valid formula expression.")
-        elif new_custom_col_name in df.columns:
-            st.error("⚠️ Column name already exists. Please enter a unique name.")
-        else:
-            try:
-                df[new_custom_col_name] = df.eval(custom_formula)
-                st.session_state["df"] = df
-                st.success(f"🎉 Successfully created column `{new_custom_col_name}` using formula: `{custom_formula}`!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"❌ Error evaluating formula. Details: {e}")
-
-# ==========================================
-# 🛠️ Module 2: Quick Two-Column Math Creator
-# ==========================================
-with st.expander("➕ Module 2: Quick Calculated Column (A op B)"):
-    if len(num_cols) >= 2:
-        c1, c2, c3, c4 = st.columns(4)
-        with c1:
-            col_a = st.selectbox("Select First Column (A)", num_cols, key="math_col_a_key")
-        with c2:
-            op = st.selectbox("Select Operation", ["Add (+)", "Subtract (-)", "Multiply (*)", "Divide (/)"], key="math_op_key")
-        with c3:
-            col_b = st.selectbox("Select Second Column (B)", num_cols, key="math_col_b_key")
-        with c4:
-            new_col_name = st.text_input("New Column Name", value=f"{col_a}_{op[0].lower()}", key="math_new_col_key")
-
-        if st.button("✨ Construct Calculated Feature", type="primary", key="btn_construct_a_b"):
-            if new_col_name in df.columns:
-                st.error("⚠️ Column name already exists. Please enter a unique name.")
-            else:
-                if "Add" in op:
-                    df[new_col_name] = df[col_a] + df[col_b]
-                elif "Subtract" in op:
-                    df[new_col_name] = df[col_a] - df[col_b]
-                elif "Multiply" in op:
-                    df[new_col_name] = df[col_a] * df[col_b]
-                elif "Divide" in op:
-                    df[new_col_name] = np.where(df[col_b] != 0, df[col_a] / df[col_b], np.nan)
-
-                st.session_state["df"] = df
-                st.success(f"🎉 Created feature `{new_col_name}` successfully!")
-                st.rerun()
-    else:
-        st.info("At least two numeric columns are required for custom arithmetic feature construction.")
-
-# ==========================================
-# 📊 Module 3: Binning & Discretization
-# ==========================================
-with st.expander("📦 Module 3: Feature Binning / Quantilization (Continuous to Categorical)"):
-    if num_cols:
-        b1, b2, b3 = st.columns(3)
-        with b1:
-            bin_target = st.selectbox("Select Numeric Column to Bin", num_cols, key="bin_target_key")
-        with b2:
-            num_bins = st.slider("Number of Bins / Groups", min_value=2, max_value=10, value=3, key="num_bins_slider_key")
-        with b3:
-            bin_col_name = st.text_input("Binned Column Name", value=f"{bin_target}_Group", key="bin_col_name_input_key")
-
-        bin_labels_str = st.text_input("Custom Group Labels (Comma Separated - Optional)", placeholder="Low, Medium, High", key="bin_labels_input_key")
-
-        if st.button("📦 Generate Binned Feature", key="btn_bin_feature"):
-            try:
-                if bin_labels_str.strip():
-                    labels = [l.strip() for l in bin_labels_str.split(",")]
-                    if len(labels) != num_bins:
-                        st.error(f"⚠️ Label count ({len(labels)}) must match number of bins ({num_bins}).")
-                        st.stop()
-                else:
-                    labels = [f"Group_{i+1}" for i in range(num_bins)]
-
-                try:
-                    df[bin_col_name] = pd.qcut(df[bin_target], q=num_bins, labels=labels, duplicates="drop")
-                except ValueError:
-                    df[bin_col_name] = pd.cut(df[bin_target], bins=num_bins, labels=labels)
-
-                st.session_state["df"] = df
-                st.success(f"🎉 Created binned column `{bin_col_name}`!")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Failed to bin feature: {str(e)}")
-    else:
-        st.info("No numeric columns available for binning.")
-
-# ==========================================
-# 📐 Module 4: Mathematical Transformations
-# ==========================================
-with st.expander("📐 Module 4: Mathematical Transformations (Skew Reduction)"):
-    if num_cols:
-        t1, t2 = st.columns(2)
-        with t1:
-            trans_col = st.selectbox("Select Column to Transform", num_cols, key="trans_col_key")
-        with t2:
-            trans_type = st.selectbox("Select Transformation", ["Log Transformation (log1p)", "Square Root (sqrt)", "Absolute Value (abs)"], key="trans_type_key")
-
-        if st.button("📐 Apply Transformation", key="btn_apply_transform"):
-            trans_name = f"{trans_col}_{trans_type.split()[0].lower()}"
-            if "Log" in trans_type:
-                df[trans_name] = np.log1p(np.maximum(0, df[trans_col]))
-            elif "Square Root" in trans_type:
-                df[trans_name] = np.sqrt(np.maximum(0, df[trans_col]))
-            elif "Absolute" in trans_type:
-                df[trans_name] = np.abs(df[trans_col])
-
-            st.session_state["df"] = df
-            st.success(f"🎉 Created transformed feature `{trans_name}`!")
-            st.rerun()
-    else:
-        st.info("No numeric columns available for mathematical transformations.")
-
-# ==========================================
-# 🏷️ Module 5: Categorical Encoding & Feature Scaling
-# ==========================================
-with st.expander("🏷️ Module 5: Categorical Encoding & Feature Scaling"):
-    e1, e2 = st.columns(2)
+    # 2. إجمالي المبيعات/الانفاق (أول عمود مالي)
+    spend_cols = [c for c in numeric_cols if any(k in c.lower() for k in ['spent', 'total', 'revenue', 'price', 'amount'])]
+    target_spend_col = spend_cols[0] if spend_cols else (numeric_cols[0] if numeric_cols else None)
     
-    with e1:
-        st.markdown("##### **Categorical Encoding**")
-        if cat_cols:
-            encode_target = st.selectbox("Select Categorical Column", cat_cols, key="encode_target_col_key")
-            encode_method = st.radio("Encoding Method", ["One-Hot Encoding (Dummy Variables)", "Ordinal / Label Encoding"], key="encode_method_radio_key")
-            
-            if st.button("🏷️ Apply Encoding", key="btn_apply_encode"):
-                if "One-Hot" in encode_method and df[encode_target].nunique() > 50:
-                    st.error(f"⚠️ Column `{encode_target}` has too many unique values ({df[encode_target].nunique()}). One-Hot Encoding disabled.")
-                else:
-                    if "One-Hot" in encode_method:
-                        df = pd.get_dummies(df, columns=[encode_target], drop_first=True, dtype=int)
-                    else:
-                        df[f"{encode_target}_encoded"] = df[encode_target].astype("category").cat.codes
-                    
-                    st.session_state["df"] = df
-                    st.success(f"🎉 Encoded `{encode_target}` successfully!")
-                    st.rerun()
+    with kpi_cols[1]:
+        if target_spend_col:
+            total_val = filtered_df[target_spend_col].sum()
+            avg_val = filtered_df[target_spend_col].mean()
+            st.metric(
+                label=f"Total {target_spend_col.replace('_', ' ').title()}", 
+                value=f"{total_val:,.1f}",
+                delta=f"Avg: {avg_val:,.1f}"
+            )
         else:
-            st.info("No categorical columns available for encoding.")
+            st.metric(label="Total Volume", value="N/A")
 
-    with e2:
-        st.markdown("##### **Feature Scaling**")
-        if num_cols:
-            scale_target = st.multiselect("Select Numeric Columns to Scale", num_cols, key="scale_target_cols_key")
-            scale_method = st.radio("Scaling Strategy", ["MinMax Scaling (0 to 1)", "Standardization (Z-Score)"], key="scale_method_radio_key")
-
-            if st.button("⚖️ Apply Scaling", key="btn_apply_scale"):
-                if scale_target:
-                    for col in scale_target:
-                        if "MinMax" in scale_method:
-                            min_val = df[col].min()
-                            max_val = df[col].max()
-                            if max_val != min_val:
-                                df[f"{col}_minmax"] = (df[col] - min_val) / (max_val - min_val)
-                        else:
-                            mean_val = df[col].mean()
-                            std_val = df[col].std()
-                            if std_val != 0:
-                                df[f"{col}_zscore"] = (df[col] - mean_val) / std_val
-
-                    st.session_state["df"] = df
-                    st.success("🎉 Scaling applied successfully!")
-                    st.rerun()
-                else:
-                    st.warning("Select at least one numeric column to scale.")
+    # 3. إجمالي الكميات أو عمود رقمي مختلف (منع التكرار مع الكرت الثاني)
+    qty_cols = [c for c in numeric_cols if any(k in c.lower() for k in ['qty', 'quantity', 'count', 'unit']) and c != target_spend_col]
+    other_num_cols = [c for c in numeric_cols if c != target_spend_col]
+    target_qty_col = qty_cols[0] if qty_cols else (other_num_cols[0] if other_num_cols else None)
+    
+    with kpi_cols[2]:
+        if target_qty_col:
+            total_qty = filtered_df[target_qty_col].sum()
+            avg_qty = filtered_df[target_qty_col].mean()
+            st.metric(
+                label=f"Total {target_qty_col.replace('_', ' ').title()}", 
+                value=f"{total_qty:,.1f}",
+                delta=f"Avg: {avg_qty:,.1f}"
+            )
         else:
-            st.info("No numeric columns available for scaling.")
+            st.metric(label="Data Status", value="100% Valid")
+
+    # 4. متوسط قيمة العملية (Average Value)
+    with kpi_cols[3]:
+        if target_spend_col:
+            avg_order_val = filtered_df[target_spend_col].mean()
+            st.metric(
+                label="Avg Transaction Value",
+                value=f"{avg_order_val:,.1f}",
+                delta="Mean Revenue"
+            )
+        else:
+            st.metric(label="Data Health", value="100%")
+
+else:
+    st.info("No data available to display KPIs based on current filters.")
 
 st.divider()
 
-# Preview updated dataset
-st.subheader("👀 Current Dataset Preview (Post Feature Engineering)")
-st.dataframe(df.head(10), use_container_width=True)
+# ==========================================
+# 4. EXECUTIVE VISUAL BREAKDOWN (معدل للتركيز على Category)
+# ==========================================
+st.markdown("### 📉 Executive Visual Breakdown")
 
-# Transition button
-col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
-with col_b2:
-    if st.button("Proceed to Exploratory Data Analysis (EDA) ➔", type="primary", use_container_width=True, key="btn_proceed_eda"):
-        st.switch_page("pages/6_Data_Analysis.py")
+# منطق ذكي لاختيار العمود النصي الأنسب (تفضيل Category على Item لضمان وضوح الرسم)
+preferred_cat_cols = [c for c in slicer_categorical_cols if any(k in c.lower() for k in ['category', 'type', 'group', 'payment', 'location'])]
+main_chart_cat = preferred_cat_cols[0] if preferred_cat_cols else (slicer_categorical_cols[0] if slicer_categorical_cols else (categorical_cols[0] if categorical_cols else None))
+
+chart_num_cols = [c for c in numeric_cols if not any(k in c.lower() for k in ['year', 'month', 'day', 'id'])]
+if not chart_num_cols:
+    chart_num_cols = numeric_cols
+
+if not filtered_df.empty:
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if main_chart_cat and chart_num_cols:
+            avg_df = filtered_df.groupby(main_chart_cat, as_index=False)[chart_num_cols[0]].mean()
+            
+            fig1 = px.bar(
+                avg_df, 
+                x=main_chart_cat, 
+                y=chart_num_cols[0], 
+                title=f"Average {chart_num_cols[0].replace('_', ' ')} by {main_chart_cat.title()}",
+                color=main_chart_cat
+            )
+            fig1.update_layout(
+                xaxis_tickangle=-30,
+                showlegend=False,
+                margin=dict(l=20, r=20, t=40, b=80)
+            )
+            st.plotly_chart(fig1, use_container_width=True)
+        else:
+            st.info("Bar Chart requires at least 1 Categorical & 1 Numeric column.")
+
+    with col2:
+        if main_chart_cat:
+            counts = filtered_df[main_chart_cat].value_counts().reset_index()
+            counts.columns = [main_chart_cat, 'count']
+            
+            if len(counts) > 10:
+                top_10 = counts.iloc[:10]
+                others_count = counts.iloc[10:]['count'].sum()
+                others_df = pd.DataFrame([{main_chart_cat: 'Others', 'count': others_count}])
+                counts_display = pd.concat([top_10, others_df], ignore_index=True)
+            else:
+                counts_display = counts
+
+            fig2 = px.pie(
+                counts_display, 
+                names=main_chart_cat, 
+                values='count',
+                title=f"Distribution of {main_chart_cat.title()}",
+                hole=0.4
+            )
+            fig2.update_traces(textposition='inside', textinfo='percent+label')
+            fig2.update_layout(margin=dict(l=20, r=20, t=40, b=20))
+            st.plotly_chart(fig2, use_container_width=True)
+        else:
+            st.info("Pie Chart requires a Categorical column.")
+
+    # Scatter Plot
+    if len(chart_num_cols) >= 2:
+        fig3 = px.scatter(
+            filtered_df, 
+            x=chart_num_cols[0], 
+            y=chart_num_cols[1], 
+            color=main_chart_cat if main_chart_cat else None,
+            title=f"{chart_num_cols[0].replace('_', ' ')} vs {chart_num_cols[1].replace('_', ' ')} Analysis"
+        )
+        fig3.update_layout(margin=dict(l=20, r=20, t=40, b=40))
+        st.plotly_chart(fig3, use_container_width=True)
+else:
+    st.warning("No data available for charts based on current filters.")

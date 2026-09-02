@@ -7,9 +7,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 from utils.translations import init_language, t
 
-# 🔒 Paywall / Subscription Check (Freemium Gate)
-from utils.paywall import check_subscription
-
 # ==========================================
 # 0. Page Configuration & Language Init
 # ==========================================
@@ -18,9 +15,6 @@ st.set_page_config(
     page_icon="📄",
     layout="wide"
 )
-
-# تفعيل فحص اشتراك المستخدم لهذه الصفحة
-check_subscription("Executive Report Generator")
 
 # يقرأ اللغة المختارة ويظهر القائمة الجانبية
 init_language()
@@ -33,13 +27,21 @@ except FileNotFoundError:
     pass
 
 st.title("📄 Executive Report Generator & Export Studio")
-st.write(t("sub_title") if t("sub_title") != "sub_title" else "Synthesize dataset metrics, cleaning logs, statistical insights, and visual dashboards into a comprehensive report.")
+st.write(
+    t("sub_title")
+    if t("sub_title") != "sub_title"
+    else "Synthesize dataset metrics, cleaning logs, statistical insights, and visual dashboards into a comprehensive report."
+)
 
 # ==========================================
 # 1. Check Dataset Availability
 # ==========================================
 if "df" not in st.session_state or st.session_state["df"] is None:
-    st.warning(t("no_dataset") if t("no_dataset") != "no_dataset" else "📂 Please upload a dataset first from the Upload page.")
+    st.warning(
+        t("no_dataset")
+        if t("no_dataset") != "no_dataset"
+        else "📂 Please upload a dataset first from the Upload page."
+    )
     st.stop()
 
 df = st.session_state["df"].copy()

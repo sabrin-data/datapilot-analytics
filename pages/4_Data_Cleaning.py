@@ -13,10 +13,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# 🔒 Paywall / Subscription Check (Freemium Gate)
-from utils.paywall import check_subscription
-check_subscription("Advanced Data Cleaning")
-
 # يقرأ اللغة المختارة ويظهر القائمة الجانبية
 init_language()
 
@@ -71,7 +67,7 @@ text_cols = df.select_dtypes(include=["object", "string"]).columns.tolist()
 num_as_str_cols = []
 for c in text_cols:
     sample = df[c].dropna().astype(str)
-    cleaned_sample = sample.str.replace(r"[$,₪,€,% ]", "", regex=True)
+    cleaned_sample = sample.str.replace(r"[$,₪,€,%]", "", regex=True)
     if not cleaned_sample.empty and cleaned_sample.str.replace(".", "", regex=False).str.isnumeric().all():
         num_as_str_cols.append(c)
 
@@ -152,7 +148,7 @@ with st.expander("📊 Phase 5: Outlier Detection & Treatment (IQR Method)"):
         col_p7_1, col_p7_2 = st.columns(2)
         with col_p7_1:
             detect_outliers = st.checkbox("Enable Outlier Detection & Treatment", key="chk_detect_outliers")
-            outlier_cols = st.multiselect("Select Columns for Outlier Treatment", num_cols, default=num_cols[:2] if len(num_cols)>=2 else num_cols, key="ms_outlier_cols")
+            outlier_cols = st.multiselect("Select Columns for Outlier Treatment", num_cols, default=num_cols[:2] if len(num_cols) >= 2 else num_cols, key="ms_outlier_cols")
         with col_p7_2:
             outlier_action = st.selectbox(
                 "Outlier Action",
@@ -177,25 +173,29 @@ if st.button("🚀 Execute Comprehensive Cleaning", type="primary", use_containe
         b = len(cleaned_df)
         cleaned_df = cleaned_df.drop_duplicates()
         rem = b - len(cleaned_df)
-        if rem > 0: cleaning_log.append(f"✔ Removed **{rem:,}** duplicate rows.")
+        if rem > 0:
+            cleaning_log.append(f"✔ Removed **{rem:,}** duplicate rows.")
 
     if drop_dup_cols:
         b = cleaned_df.shape[1]
         cleaned_df = cleaned_df.loc[:, ~cleaned_df.columns.duplicated()]
         rem = b - cleaned_df.shape[1]
-        if rem > 0: cleaning_log.append(f"✔ Removed **{rem}** duplicate columns.")
+        if rem > 0:
+            cleaning_log.append(f"✔ Removed **{rem}** duplicate columns.")
 
     if drop_empty_rows:
         b = len(cleaned_df)
         cleaned_df = cleaned_df.dropna(how="all")
         rem = b - len(cleaned_df)
-        if rem > 0: cleaning_log.append(f"✔ Removed **{rem:,}** completely empty rows.")
+        if rem > 0:
+            cleaning_log.append(f"✔ Removed **{rem:,}** completely empty rows.")
 
     if drop_empty_cols:
         b = cleaned_df.shape[1]
         cleaned_df = cleaned_df.dropna(axis=1, how="all")
         rem = b - cleaned_df.shape[1]
-        if rem > 0: cleaning_log.append(f"✔ Removed **{rem}** completely empty columns.")
+        if rem > 0:
+            cleaning_log.append(f"✔ Removed **{rem}** completely empty columns.")
 
     # --- Missing Values Execution ---
     curr_num_cols = cleaned_df.select_dtypes(include=np.number).columns
@@ -225,16 +225,16 @@ if st.button("🚀 Execute Comprehensive Cleaning", type="primary", use_containe
 
     # --- Phase 2 Execution (Text Sanitation) ---
     target_str_cols = text_cols_selected if text_cols_selected else curr_cat_cols.tolist()
-    
+
     for col in target_str_cols:
         if col in cleaned_df.columns:
             s = cleaned_df[col].astype(str)
-            
+
             if strip_spaces:
                 s = s.str.strip()
             if remove_extra_spaces:
                 s = s.str.replace(r"\s+", " ", regex=True)
-            
+
             if case_transform == "UPPERCASE":
                 s = s.str.upper()
             elif case_transform == "lowercase":
@@ -246,32 +246,40 @@ if st.button("🚀 Execute Comprehensive Cleaning", type="primary", use_containe
                 gender_map = {r"(?i)^(male|m|males)$": "Male", r"(?i)^(female|f|females)$": "Female"}
                 bool_map = {r"(?i)^(yes|y|true|t|1)$": "Yes", r"(?i)^(no|n|false|f|0)$": "No"}
                 country_map = {r"(?i)^(usa|u\.s\.a|united states|us)$": "United States", r"(?i)^(uk|u\.k|united kingdom)$": "United Kingdom"}
-                
+
                 full_map = {**gender_map, **bool_map, **country_map}
+
                 for pattern, replacement in full_map.items():
                     s = s.replace(pattern, replacement, regex=True)
 
             cleaned_df[col] = s
 
-    if strip_spaces or remove_extra_spaces: cleaning_log.append("✔ Normalized whitespaces (Leading, trailing, and internal).")
-    if case_transform != "Do Nothing": cleaning_log.append(f"✔ Standardized text case transformation to **{case_transform}**.")
-    if standardize_common: cleaning_log.append("✔ Unified word variations (Gender, Boolean, and Country codes).")
+    if strip_spaces or remove_extra_spaces:
+        cleaning_log.append("✔ Normalized whitespaces (Leading, trailing, and internal).")
+    if case_transform != "Do Nothing":
+        cleaning_log.append(f"✔ Standardized text case transformation to **{case_transform}**.")
+    if standardize_common:
+        cleaning_log.append("✔ Unified word variations (Gender, Boolean, and Country codes).")
 
     # --- Phase 3 Execution (Numeric Sanitation) ---
     if clean_currency_symbols or clean_percentages or auto_convert_num_str:
         for col in target_str_cols:
             if col in cleaned_df.columns:
                 series_str = cleaned_df[col].astype(str)
+
                 if clean_currency_symbols:
                     series_str = series_str.str.replace(r"[$,₪,€,£,]", "", regex=True)
+
                 if clean_percentages:
                     has_pct = series_str.str.contains("%", na=False)
                     series_str = series_str.str.replace("%", "", regex=False)
-                
+
                 converted = pd.to_numeric(series_str, errors="coerce")
+
                 if converted.notnull().sum() > 0.5 * len(cleaned_df):
                     if clean_percentages:
                         converted = np.where(has_pct, converted / 100.0, converted)
+
                     cleaned_df[col] = converted
 
         cleaning_log.append("✔ Cleaned currency symbols, commas, and percentage strings into numeric dtypes.")
@@ -293,12 +301,14 @@ if st.button("🚀 Execute Comprehensive Cleaning", type="primary", use_containe
             parsed_dates = pd.to_datetime(cleaned_df[d_col], errors="coerce")
             if parsed_dates.notnull().sum() > 0:
                 cleaned_df[d_col] = parsed_dates
+
                 if extract_date_parts:
                     cleaned_df[f"{d_col}_Year"] = parsed_dates.dt.year
                     cleaned_df[f"{d_col}_Month"] = parsed_dates.dt.month
                     cleaned_df[f"{d_col}_DayName"] = parsed_dates.dt.day_name()
-    
-    if date_cols_process: cleaning_log.append(f"✔ Standardized date formats for `{date_cols_process}`.")
+
+    if date_cols_process:
+        cleaning_log.append(f"✔ Standardized date formats for `{date_cols_process}`.")
 
     # --- Outliers IQR Execution ---
     if 'detect_outliers' in locals() and detect_outliers and outlier_cols:
@@ -339,7 +349,7 @@ if st.button("🚀 Execute Comprehensive Cleaning", type="primary", use_containe
 if "cleaning_log" in st.session_state and st.session_state["cleaning_log"]:
     st.divider()
     st.subheader("📋 Cleaning Log Audit Trail")
-    
+
     for log_item in st.session_state["cleaning_log"]:
         st.markdown(log_item)
 

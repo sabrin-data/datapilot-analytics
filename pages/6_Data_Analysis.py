@@ -14,10 +14,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# 🔒 Paywall / Subscription Check (Freemium Gate)
-from utils.paywall import check_subscription
-check_subscription("Exploratory Data Analysis")
-
 # تفعيل تهيئة اللغة (بدون إظهار قائمة السايدبار)
 init_language()
 
@@ -49,10 +45,10 @@ st.divider()
 # ==========================================
 num_cols = df.select_dtypes(include=np.number).columns.tolist()
 
-# ✅ تصنيف الأعمدة التصنيفية والنصية
+# ✅ التعديل الأدق: تشميل جميع الأعمدة النصية بدون تقييد العدد بـ 50، + الأعمدة الرقمية التصنيفية (أقل من 100 قيمة)
 cat_cols = [
-    col for col in df.columns 
-    if str(df[col].dtype) in ['object', 'category', 'string'] 
+    col for col in df.columns
+    if str(df[col].dtype) in ['object', 'category', 'string']
     or df[col].nunique() < 100
 ]
 
@@ -70,8 +66,8 @@ with st.expander("📊 Section 1: Single Variable Analysis (Univariate Analysis)
             u_col1, u_col2 = st.columns([1, 2])
             with u_col1:
                 selected_num = st.selectbox("Select Numeric Variable", num_cols, key="uni_num")
-                
                 st.markdown("##### **Statistical Snapshot**")
+                
                 s_mean = df[selected_num].mean()
                 s_std = df[selected_num].std()
                 s_median = df[selected_num].median()
@@ -84,6 +80,7 @@ with st.expander("📊 Section 1: Single Variable Analysis (Univariate Analysis)
 
             with u_col2:
                 plot_type = st.radio("Distribution Plot Type", ["Histogram + Boxplot", "Density KDE", "Violin Plot"], horizontal=True)
+                
                 if plot_type == "Histogram + Boxplot":
                     fig_uni = px.histogram(df, x=selected_num, marginal="box", title=f"Distribution of {selected_num}", color_discrete_sequence=['#3366CC'])
                 elif plot_type == "Density KDE":
@@ -109,6 +106,7 @@ with st.expander("📊 Section 1: Single Variable Analysis (Univariate Analysis)
 
             with c_col2:
                 cat_chart_type = st.radio("Chart Type", ["Bar Chart", "Pie Chart", "Donut Chart"], horizontal=True)
+                
                 if cat_chart_type == "Bar Chart":
                     fig_cat = px.bar(x=val_counts.index, y=val_counts.values, labels={'x': selected_cat, 'y': 'Count'}, title=f"Top {top_n} Categories in {selected_cat}", color_discrete_sequence=['#FF6692'])
                 elif cat_chart_type == "Pie Chart":
@@ -160,20 +158,20 @@ with st.expander("📈 Section 2: Multi-Variable Relationship Analysis", expande
     # 3. Correlation Matrix Heatmap
     with bi_tab3:
         base_corr_cols = [
-            c for c in num_cols 
-            if not c.startswith('Category_') 
+            c for c in num_cols
+            if not c.startswith('Category_')
             and not c.startswith('Payment Method_')
             and not c.endswith(('_log', '_minmax', '_scaled', '_Year', '_Month'))
-            and df[c].std() > 0 
+            and df[c].std() > 0
             and not df[c].isna().all()
         ]
         
         if len(base_corr_cols) >= 2:
             corr_matrix = df[base_corr_cols].corr()
             fig_corr = px.imshow(
-                corr_matrix, 
-                text_auto=".2f", 
-                aspect="auto", 
+                corr_matrix,
+                text_auto=".2f",
+                aspect="auto",
                 color_continuous_scale="RdBu_r",
                 zmin=-1,
                 zmax=1,
@@ -224,11 +222,11 @@ with st.expander("💡 Section 4: Automated AI EDA Insights", expanded=True):
     st.subheader("💡 Key Statistical Insights & Correlation Findings")
     
     base_corr_cols = [
-        c for c in num_cols 
-        if not c.startswith('Category_') 
+        c for c in num_cols
+        if not c.startswith('Category_')
         and not c.startswith('Payment Method_')
         and not c.endswith(('_log', '_minmax', '_scaled', '_Year', '_Month'))
-        and df[c].std() > 0 
+        and df[c].std() > 0
         and not df[c].isna().all()
     ]
     
@@ -275,5 +273,5 @@ st.divider()
 # Transition Button
 col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
 with col_b2:
-    if st.button("Proceed to Interactive Dashboard Studio ➔", type="primary", use_container_width=True, key="btn_proceed_dashboard"):
+    if st.button("Proceed to Interactive Dashboard Studio ➔", type="primary", use_container_width=True):
         st.switch_page("pages/7_Dashboard.py")

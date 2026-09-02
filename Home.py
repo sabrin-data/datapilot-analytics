@@ -1,166 +1,366 @@
 import streamlit as st
+import pandas as pd
+import numpy as np
 from utils.translations import init_language, t
 
 # ==========================================
-# 0. Page Configuration & Language Init
+# 0. Page Configuration
 # ==========================================
 st.set_page_config(
-    page_title="DataPilot AI — Platform Home",
-    page_icon="🚀",
-    layout="wide"
+    page_title="DataPilot AI - Home",
+    page_icon="🧠",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
+# 🌐 1. Initialize Language & Sidebar
 init_language()
 
-# قراءة الـ CSS الموحد
+# 🎨 2. Load Custom CSS from Assets
 try:
     with open("assets/style.css", encoding="utf-8") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 except FileNotFoundError:
     pass
 
-# ==========================================
-# Hero Section
-# ==========================================
-col_img, col_text = st.columns([1, 2.5], gap="large")
+# 🔄 3. RTL Page Direction Handling
+if st.session_state.get("lang") == "ar":
+    st.markdown("""
+        <style>
+            .stApp {
+                direction: RTL;
+                text-align: right;
+            }
+            .cap-num {
+                margin-right: 0px !important;
+                margin-left: 10px !important;
+            }
+            .card-1, .card-2, .card-3, .card-4, .card-5, .card-6, .card-7, .card-8, .card-9 {
+                border-left: none !important;
+                border-right: 5px solid !important;
+            }
+            .card-1 { border-right-color: #3B82F6 !important; }
+            .card-2 { border-right-color: #22C55E !important; }
+            .card-3 { border-right-color: #EF4444 !important; }
+            .card-4 { border-right-color: #F59E0B !important; }
+            .card-5 { border-right-color: #8B5CF6 !important; }
+            .card-6 { border-right-color: #06B6D4 !important; }
+            .card-7 { border-right-color: #EC4899 !important; }
+            .card-8 { border-right-color: #14B8A6 !important; }
+            .card-9 { border-right-color: #A855F7 !important; }
+        </style>
+    """, unsafe_allow_html=True)
 
-with col_img:
+# Custom Styling with Colorful Modern UI & Sidebar
+st.markdown("""
+    <style>
+        /* 🎯 Hide Sidebar Bottom Logo to prevent duplicate images */
+        [data-testid="stSidebar"] img {
+            display: none !important;
+        }
+
+        /* 🎯 Sidebar Navigation Complete Bold Fix */
+        [data-testid="stSidebarNav"] * {
+            font-weight: 700 !important;
+            color: #0F172A !important;
+        }
+
+        [data-testid="stSidebarNav"] a, 
+        [data-testid="stSidebarNav"] a span,
+        [data-testid="stSidebarNav"] li div span {
+            font-weight: 700 !important;
+            font-size: 15px !important;
+            color: #0F172A !important;
+        }
+
+        [data-testid="stSidebarNav"] a[aria-current="page"],
+        [data-testid="stSidebarNav"] a[aria-current="page"] span {
+            font-weight: 900 !important;
+            color: #2563EB !important;
+            background-color: #E0E7FF !important;
+            border-radius: 8px !important;
+        }
+
+        [data-testid="stSidebarNav"] a:hover span {
+            color: #2563EB !important;
+        }
+
+        /* Brand Badge Styling */
+        .brand-badge {
+            background-color: #eef2ff;
+            color: #4f46e5;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #c7d2fe;
+            display: inline-block;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(79, 70, 229, 0.08);
+        }
+
+        /* Modern Title Styling (Hero Section) */
+        .hero-title {
+            font-size: 38px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 50%, #8B5CF6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            line-height: 1.25;
+        }
+        .hero-subtitle {
+            font-size: 16px;
+            color: #475569;
+            margin-bottom: 25px;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        /* 🚀 Custom Primary Button Styling */
+        div.stButton > button[kind="primary"] {
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+            color: white !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            padding: 10px 20px !important;
+            border-radius: 12px !important;
+            border: none !important;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+            transition: all 0.3s ease !important;
+        }
+        div.stButton > button[kind="primary"]:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5) !important;
+            background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%) !important;
+        }
+
+        /* ✨ Custom Secondary Button Styling (Demo Dataset) */
+        div.stButton > button[kind="secondary"] {
+            background: #FFFFFF !important;
+            color: #4F46E5 !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            padding: 10px 20px !important;
+            border-radius: 12px !important;
+            border: 2px solid #C7D2FE !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1) !important;
+            transition: all 0.3s ease !important;
+        }
+        div.stButton > button[kind="secondary"]:hover {
+            transform: translateY(-2px) !important;
+            background: #EEF2FF !important;
+            border-color: #6366F1 !important;
+            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.2) !important;
+        }
+        
+        /* General Card Base */
+        .cap-card {
+            border-radius: 16px;
+            padding: 22px;
+            height: 100%;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .cap-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Specific Vibrant Card Color Gradients */
+        .card-1 { background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border-left: 5px solid #3B82F6; }
+        .card-2 { background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); border-left: 5px solid #22C55E; }
+        .card-3 { background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%); border-left: 5px solid #EF4444; }
+        .card-4 { background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border-left: 5px solid #F59E0B; }
+        .card-5 { background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%); border-left: 5px solid #8B5CF6; }
+        .card-6 { background: linear-gradient(135deg, #ECFEFF 0%, #CFFAFE 100%); border-left: 5px solid #06B6D4; }
+        .card-7 { background: linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 100%); border-left: 5px solid #EC4899; }
+        .card-8 { background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%); border-left: 5px solid #14B8A6; }
+        .card-9 { background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%); border-left: 5px solid #A855F7; }
+
+        /* Card Numbers & Headers */
+        .cap-card h4 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: #1E293B;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        .cap-num {
+            color: white;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 8px;
+            margin-right: 10px;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .num-1 { background-color: #3B82F6; }
+        .num-2 { background-color: #22C55E; }
+        .num-3 { background-color: #EF4444; }
+        .num-4 { background-color: #F59E0B; }
+        .num-5 { background-color: #8B5CF6; }
+        .num-6 { background-color: #06B6D4; }
+        .num-7 { background-color: #EC4899; }
+        .num-8 { background-color: #14B8A6; }
+        .num-9 { background-color: #A855F7; }
+
+        .cap-card p {
+            color: #334155;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# 🚀 Home / Landing Page Interface (Side-by-Side Logo & Title)
+# ==========================================
+head_col1, head_col2 = st.columns([1, 4.5], gap="medium")
+
+with head_col1:
     try:
         st.image("assets/logo.png", use_container_width=True)
     except Exception:
-        st.markdown("""
-            <div style="background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); border-radius: 50%; width: 180px; height: 180px; display: flex; align-items: center; justify-content: center; margin: auto; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);">
-                <span style="font-size: 70px;">🚀</span>
-            </div>
-        """, unsafe_allow_html=True)
+        pass
 
-with col_text:
-    st.markdown('<span style="background: #eff6ff; color: #2563EB; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 13px;">✨ DataPilot AI — AI-Powered Data Analysis Platform</span>', unsafe_allow_html=True)
-    st.title("Turn your raw data into insights in minutes.")
-    st.markdown("Upload your CSV or Excel file and let **DataPilot AI** clean, analyze, visualize, and report your data automatically.")
+with head_col2:
+    st.markdown("""
+        <div class='brand-badge'>
+            🚀 DataPilot AI — AI-Powered Data Analysis Platform
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<div class='hero-title'>Turn your raw data into insights in minutes.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='hero-subtitle'>Upload your CSV or Excel file and let DataPilot AI clean, analyze, visualize, and report your data automatically.</div>", unsafe_allow_html=True)
 
-st.markdown("<br>", unsafe_allow_html=True)
+# 🚀 Action Buttons & Active File Banner
+btn_col1, btn_col2, col_status = st.columns([1.3, 1.3, 2.4], gap="small")
 
-# ==========================================
-# Quick Action Buttons & Status
-# ==========================================
-act_c1, act_c2, act_c3 = st.columns([1.2, 1.2, 1.8])
-
-with act_c1:
-    if st.button("🚀 Upload Dataset", use_container_width=True, type="primary"):
+with btn_col1:
+    if st.button("🚀 Upload Dataset", type="primary", use_container_width=True):
         st.switch_page("pages/2_Upload.py")
 
-with act_c2:
-    if st.button("✨ Try Demo Dataset", use_container_width=True):
-        import pandas as pd
-        import numpy as np
-        # تحميل بيانات ديمو افتراضية سريعة
+with btn_col2:
+    if st.button("✨ Try Demo Dataset", type="secondary", use_container_width=True):
         np.random.seed(42)
+        dates = pd.date_range(start="2026-01-01", periods=120, freq="D")
+        regions = ["North America", "Europe", "Asia-Pacific", "Latin America"]
+        products = ["DataPilot Pro", "DataPilot Enterprise", "DataPilot Starter"]
+        channels = ["Online", "Direct Sales", "Partner"]
+        
         demo_df = pd.DataFrame({
-            "CustomerID": [f"CUST-{1000+i}" for i in range(100)],
-            "Age": np.random.randint(18, 70, 100),
-            "Income": np.random.randint(30000, 120000, 100),
-            "Score": np.random.uniform(10, 100, 100),
-            "Category": np.random.choice(["A", "B", "C"], 100)
+            "Transaction_ID": [f"TRX-{2000+i}" for i in range(120)],
+            "Date": dates,
+            "Region": np.random.choice(regions, 120),
+            "Product": np.random.choice(products, 120),
+            "Sales_Channel": np.random.choice(channels, 120),
+            "Sales_Amount": np.random.randint(250, 2500, 120),
+            "Units_Sold": np.random.randint(1, 20, 120),
+            "Customer_Rating": np.random.uniform(3.8, 5.0, 120).round(1)
         })
-        st.session_state["df"] = demo_df.copy()
-        st.session_state["original_df"] = demo_df.copy()
-        st.session_state["file_name"] = "demo_dataset.csv"
-        st.session_state["cleaning_log"] = []
-        st.success("🎉 Demo dataset loaded successfully!")
-        st.switch_page("pages/3_Data_Overview.py")
+        
+        st.session_state["df"] = demo_df
+        st.session_state["file_name"] = "Demo_Sales_Dataset.csv"
+        st.toast("⚡ Demo Dataset Loaded Successfully!", icon="🎉")
+        st.rerun()
 
-with act_c3:
+with col_status:
     if "df" in st.session_state and st.session_state["df"] is not None:
-        st.markdown(f'<div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px 15px; border-radius: 8px; font-size: 14px; font-weight: 500;">📁 Active Dataset: <b>{st.session_state.get("file_name", "Dataset")}</b></div>', unsafe_allow_html=True)
+        file_name = st.session_state.get("file_name", "Dataset")
+        df_shape = st.session_state["df"].shape
+        st.success(f"📁 **Active Dataset:** {file_name} ({df_shape[0]:,} rows × {df_shape[1]} cols)")
     else:
-        st.markdown('<div style="background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; padding: 10px 15px; border-radius: 8px; font-size: 14px; font-weight: 500;">📂 No Active Dataset: Upload CSV or click \'Try Demo Dataset\'.</div>', unsafe_allow_html=True)
+        st.info("📂 **No Active Dataset:** Upload CSV or click 'Try Demo Dataset'.")
 
 st.divider()
 
 # ==========================================
-# Explore Platform Modules & Pipeline
+# 🎨 Platform Capabilities & Data Pipeline Section
 # ==========================================
-st.subheader("🧭 Explore Platform Modules & Pipeline")
+st.subheader("🎨 Explore Platform Modules & Pipeline")
 
-# الصف الأول من الموديولات
-m1, m2, m3 = st.columns(3)
-with m1:
+# --- Row 1 (Steps 1, 2, 3) ---
+c1, c2, c3 = st.columns(3)
+with c1:
     st.markdown("""
-    <div style='background: #eff6ff; border-left: 5px solid #2563EB; padding: 18px; border-radius: 10px; height: 140px;'>
-        <h4 style='color: #1e3a8a; margin-top:0;'>1️⃣ Upload & Inspect</h4>
-        <p style='color: #475569; font-size: 13px;'>Seamlessly ingest CSV and Excel files with automated encoding detection and structural verification.</p>
+    <div class='cap-card card-1'>
+        <h4><span class='cap-num num-1'>1</span> Upload & Inspect</h4>
+        <p>Seamlessly ingest CSV and Excel files with automated encoding detection and structural verification.</p>
     </div>
     """, unsafe_allow_html=True)
 
-with m2:
+with c2:
     st.markdown("""
-    <div style='background: #f0fdf4; border-left: 5px solid #16a34a; padding: 18px; border-radius: 10px; height: 140px;'>
-        <h4 style='color: #14532d; margin-top:0;'>2️⃣ Data Overview</h4>
-        <p style='color: #475569; font-size: 13px;'>Power BI-style diagnostics featuring a Data Health Score (0-100), quality metrics, and descriptive stats.</p>
+    <div class='cap-card card-2'>
+        <h4><span class='cap-num num-2'>2</span> Data Overview</h4>
+        <p>Power BI-style diagnostics featuring a Data Health Score (0-100), quality metrics, and descriptive stats.</p>
     </div>
     """, unsafe_allow_html=True)
 
-with m3:
+with c3:
     st.markdown("""
-    <div style='background: #fef2f2; border-left: 5px solid #dc2626; padding: 18px; border-radius: 10px; height: 140px;'>
-        <h4 style='color: #7f1d1d; margin-top:0;'>3️⃣ Advanced Cleaning</h4>
-        <p style='color: #475569; font-size: 13px;'>8-phase comprehensive sanitation: text normalization, word mapping, currency parsing, and outlier caps.</p>
+    <div class='cap-card card-3'>
+        <h4><span class='cap-num num-3'>3</span> Advanced Cleaning</h4>
+        <p>8-phase comprehensive sanitation: text normalization, word mapping, currency parsing, and outlier caps.</p>
     </div>
     """, unsafe_allow_html=True)
 
-st.markdown("<br>", unsafe_allow_html=True)
-
-# الصف الثاني من الموديولات
-m4, m5, m6 = st.columns(3)
-with m4:
+# --- Row 2 (Steps 4, 5, 6) ---
+c4, c5, c6 = st.columns(3)
+with c4:
     st.markdown("""
-    <div style='background: #fffbeb; border-left: 5px solid #d97706; padding: 18px; border-radius: 10px; height: 140px;'>
-        <h4 style='color: #78350f; margin-top:0;'>4️⃣ Feature Engineering</h4>
-        <p style='color: #475569; font-size: 13px;'>Perform feature scaling, categorical encoding, datetime extraction, and custom column engineering.</p>
+    <div class='cap-card card-4'>
+        <h4><span class='cap-num num-4'>4</span> Feature Engineering</h4>
+        <p>Perform feature scaling, categorical encoding, datetime extraction, and custom column engineering.</p>
     </div>
     """, unsafe_allow_html=True)
 
-with m5:
+with c5:
     st.markdown("""
-    <div style='background: #f5f3ff; border-left: 5px solid #7c3aed; padding: 18px; border-radius: 10px; height: 140px;'>
-        <h4 style='color: #3b0764; margin-top:0;'>5️⃣ Exploratory Analysis</h4>
-        <p style='color: #475569; font-size: 13px;'>Uncover patterns, correlations, distributions, and multi-variable trends via interactive Plotly charts.</p>
+    <div class='cap-card card-5'>
+        <h4><span class='cap-num num-5'>5</span> Exploratory Analysis</h4>
+        <p>Uncover patterns, correlations, distributions, and multi-variable trends via interactive Plotly charts.</p>
     </div>
     """, unsafe_allow_html=True)
 
-with m6:
+with c6:
     st.markdown("""
-    <div style='background: #ecfeff; border-left: 5px solid #0891b2; padding: 18px; border-radius: 10px; height: 140px;'>
-        <h4 style='color: #164e63; margin-top:0;'>6️⃣ Interactive Dashboard</h4>
-        <p style='color: #475569; font-size: 13px;'>Dynamic executive scorecards, KPI filters, treemaps, and custom scatter matrices.</p>
+    <div class='cap-card card-6'>
+        <h4><span class='cap-num num-6'>6</span> Interactive Dashboard</h4>
+        <p>Dynamic executive scorecards, KPI filters, treemaps, and custom scatter matrices.</p>
     </div>
     """, unsafe_allow_html=True)
 
-st.markdown("<br>", unsafe_allow_html=True)
-
-# الصف الثالث من الموديولات
-m7, m8, m9 = st.columns(3)
-with m7:
+# --- Row 3 (Steps 7, 8, 9) ---
+c7, c8, c9 = st.columns(3)
+with c7:
     st.markdown("""
-    <div style='background: #fff1f2; border-left: 5px solid #e11d48; padding: 18px; border-radius: 10px; height: 140px;'>
-        <h4 style='color: #881337; margin-top:0;'>7️⃣ AI Analyst</h4>
-        <p style='color: #475569; font-size: 13px;'>AI-powered insights, anomaly detection, automated summaries, and intelligent recommendations.</p>
+    <div class='cap-card card-7'>
+        <h4><span class='cap-num num-7'>7</span> AI Machine Learning</h4>
+        <p>Train automated ML models (Regression/Classification), analyze feature drivers, and run Isolation Forest anomaly detection.</p>
     </div>
     """, unsafe_allow_html=True)
 
-with m8:
+with c8:
     st.markdown("""
-    <div style='background: #f0fdf4; border-left: 5px solid #059669; padding: 18px; border-radius: 10px; height: 140px;'>
-        <h4 style='color: #064e3b; margin-top:0;'>8️⃣ Report Generator</h4>
-        <p style='color: #475569; font-size: 13px;'>Professional PDF reports with charts, insights, KPIs, and executive summary sections.</p>
+    <div class='cap-card card-8'>
+        <h4><span class='cap-num num-8'>8</span> Executive Report Generator</h4>
+        <p>Compile dataset metrics, cleaning audit logs, and summary stats into printable HTML reports.</p>
     </div>
     """, unsafe_allow_html=True)
 
-with m9:
+with c9:
     st.markdown("""
-    <div style='background: #faf5ff; border-left: 5px solid #9333ea; padding: 18px; border-radius: 10px; height: 140px;'>
-        <h4 style='color: #581c87; margin-top:0;'>9️⃣ Export & Share</h4>
-        <p style='color: #475569; font-size: 13px;'>Export cleaned data, dashboards, and reports. Share insights and collaborate effortlessly.</p>
+    <div class='cap-card card-9'>
+        <h4><span class='cap-num num-9'>9</span> Project Bundle Export</h4>
+        <p>Package all cleaned CSV/Excel files, audit text logs, and JSON schema metadata into a single ZIP file.</p>
     </div>
     """, unsafe_allow_html=True)
+
+st.divider()
+st.info("👈 Use the navigation sidebar on the left to start exploring your dataset!")

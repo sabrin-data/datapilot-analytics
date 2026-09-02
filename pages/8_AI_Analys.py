@@ -22,10 +22,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 🔒 Paywall / Subscription Check (Freemium Gate)
-from utils.paywall import check_subscription
-check_subscription("AI Analyst")
-
 # تفعيل تهيئة اللغة
 init_language()
 
@@ -77,6 +73,7 @@ with tab_ask:
     st.subheader("💬 Ask Anything About Your Dataset")
     st.caption("Query your data using plain language to get instant statistical answers and data breakdowns.")
     
+    # ربط مربع النص بـ key دائم لحفظه في الجلسة عند الرجوع
     user_query = st.text_input(
         "Enter your query or prompt for AI Analyst:",
         placeholder="e.g. What are the key business insights and recommendations to increase sales?",
@@ -85,14 +82,18 @@ with tab_ask:
     
     if st.button("🤖 Process Query", type="primary", key="ask_btn"):
         if user_query.strip():
+            # حفظ استجابة الاستعلام في session_state حتى لا تضيع مع الرندر
             st.session_state["last_processed_query"] = user_query
+            
             with st.spinner("AI Analyst is analyzing dataset structure..."):
                 st.success("🎯 **AI Response:**")
                 st.markdown(f"Analyzed query: *\"{user_query}\"* against **{df.shape[0]:,}** records.")
                 
                 query_clean = user_query.lower().strip()
                 
+                # Check for strategic business query intent
                 if any(k in query_clean for k in ["insight", "recommend", "increase sale", "strategy", "summary", "advice", "growth", "business"]):
+                    # Smart calculations from active dataset
                     top_cat = "N/A"
                     if 'Category' in df.columns and 'Total Spent' in df.columns:
                         top_cat = df.groupby('Category')['Total Spent'].sum().idxmax()
@@ -113,6 +114,7 @@ with tab_ask:
                     * 🔍 **Deep Dive:** Navigate to the **Key Insights** and **Recommendations & ML** tabs above for complete model metrics and anomaly detections!
                     """)
                 else:
+                    # Default Data Breakdown Preview for standard data queries
                     st.dataframe(df.head(10), use_container_width=True)
         else:
             st.error("Please enter a valid query.")
@@ -147,6 +149,7 @@ with tab_insights:
     st.subheader("💡 Automated Key Insights & Correlation Analysis")
     st.caption("Discover patterns, statistical anomalies, and strong variable interactions.")
     
+    # Filter core numeric attributes (exclude encoded/derived dummy variables)
     base_corr_cols = [
         col for col in num_cols
         if not col.startswith(('Category_', 'Payment Method_', 'Payment_', 'Item_'))
@@ -330,7 +333,7 @@ with tab_ml:
             else:
                 acc = accuracy_score(y_test, y_pred)
                 f1 = f1_score(y_test, y_pred, average="weighted")
-                
+
                 m1.metric("Model Accuracy", f"{acc * 100:.2f}%")
                 m2.metric("Weighted F1-Score", f"{f1:.3f}")
                 m3.metric("Test Count", f"{len(y_test):,}")
@@ -359,7 +362,7 @@ with tab_ml:
                     iso_model = IsolationForest(contamination=contamination_rate, random_state=42)
                     preds = iso_model.fit_predict(anom_df)
                     anom_df["Anomaly_Status"] = np.where(preds == -1, "Anomaly 🚨", "Normal ✅")
-                    
+
                     anom_count = (preds == -1).sum()
                     st.warning(f"🚨 **Detected {anom_count:,} Anomalies** out of **{len(anom_df):,}** records ({anom_count/len(anom_df)*100:.2f}%).")
 
