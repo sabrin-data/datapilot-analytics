@@ -53,7 +53,6 @@ with st.expander("📝 Module 1: Custom Advanced Formula Builder (Multi-Column)"
     if st.button("🚀 Apply Advanced Formula", type="primary"):
         if formula_expr and new_col_name:
             try:
-                # تقييم المعادلة الحسابية وتطبيقا على الجدول
                 df[new_col_name] = df.eval(formula_expr)
                 st.session_state["df"] = df
                 st.success(f"✅ Feature `{new_col_name}` successfully created!")
@@ -158,3 +157,13 @@ st.divider()
 st.subheader("👁️ Current Dataset Preview (Post Feature Engineering)")
 st.write(f"Total Rows: **{df.shape[0]:,}** | Total Columns: **{df.shape[1]}**")
 st.dataframe(df.head(10), use_container_width=True)
+
+st.divider()
+
+# ==========================================
+# Proceed Button (Proceed to EDA)
+# ==========================================
+col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
+with col_b2:
+    if st.button("Proceed to Exploratory Data Analysis (EDA) ➔", type="primary", use_container_width=True):
+        st.switch_page("pages/6_Data_Analysis.py")
