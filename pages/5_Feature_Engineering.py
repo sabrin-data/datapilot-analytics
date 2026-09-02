@@ -131,23 +131,66 @@ with st.expander("📐 Module 4: Mathematical Transformations (Skew Reduction)")
             st.rerun()
 
 # ==========================================
-# Module 5: Categorical Encoding
+# Module 5: Categorical Encoding & Feature Scaling
 # ==========================================
-with st.expander("🔠 Module 5: Categorical Encoding & Feature Scaling"):
-    if categorical_cols:
-        enc_col = st.selectbox("Select Categorical Column:", categorical_cols, key="enc_col")
-        enc_type = st.radio("Encoding Method:", ["One-Hot Encoding (Get Dummies)", "Label / Frequency Encoding"])
+with st.expander("🔠 Module 5: Categorical Encoding & Feature Scaling", expanded=False):
+    col_enc, col_scale = st.columns(2)
 
-        if st.button("Apply Encoding"):
-            if "One-Hot" in enc_type:
-                df = pd.get_dummies(df, columns=[enc_col], prefix=enc_col, drop_first=True)
-            else:
-                freq = df[enc_col].value_counts()
-                df[f"{enc_col}_freq"] = df[enc_col].map(freq)
+    # --- الجزء الأيسر: Categorical Encoding ---
+    with col_enc:
+        st.markdown("#### **Categorical Encoding**")
+        if categorical_cols:
+            enc_col = st.selectbox("Select Categorical Column", categorical_cols, key="enc_col_m5")
+            enc_method = st.radio(
+                "Encoding Method", 
+                ["One-Hot Encoding (Dummy Variables)", "Ordinal / Label Encoding"],
+                key="enc_method_m5"
+            )
+            
+            if st.button("🏷️ Apply Encoding", type="primary", key="btn_apply_enc"):
+                if "One-Hot" in enc_method:
+                    df = pd.get_dummies(df, columns=[enc_col], prefix=enc_col, drop_first=True)
+                else:
+                    df[f"{enc_col}_encoded"] = df[enc_col].astype('category').cat.codes
+                
+                st.session_state["df"] = df
+                st.success(f"✅ Encoding applied to `{enc_col}`!")
+                st.rerun()
+        else:
+            st.info("No categorical columns available.")
 
-            st.session_state["df"] = df
-            st.success("✅ Encoding applied successfully!")
-            st.rerun()
+    # --- الجزء الأيمن: Feature Scaling ---
+    with col_scale:
+        st.markdown("#### **Feature Scaling**")
+        if numeric_cols:
+            scale_cols = st.multiselect("Select Numeric Columns to Scale", numeric_cols, key="scale_cols_m5")
+            scale_method = st.radio(
+                "Scaling Strategy", 
+                ["MinMax Scaling (0 to 1)", "Standardization (Z-Score)"],
+                key="scale_method_m5"
+            )
+
+            if st.button("⚖️ Apply Scaling", type="primary", key="btn_apply_scale"):
+                if scale_cols:
+                    for col in scale_cols:
+                        if "MinMax" in scale_method:
+                            min_val = df[col].min()
+                            max_val = df[col].max()
+                            if max_val != min_val:
+                                df[f"{col}_minmax"] = (df[col] - min_val) / (max_val - min_val)
+                        else:
+                            mean_val = df[col].mean()
+                            std_val = df[col].std()
+                            if std_val != 0:
+                                df[f"{col}_zscore"] = (df[col] - mean_val) / std_val
+
+                    st.session_state["df"] = df
+                    st.success("✅ Scaling applied successfully!")
+                    st.rerun()
+                else:
+                    st.warning("Please select at least one numeric column.")
+        else:
+            st.info("No numeric columns available.")
 
 st.divider()
 
