@@ -31,11 +31,11 @@ st.write(t("sub_title") if t("sub_title") != "sub_title" else "Comprehensive dat
 # 1. Check Dataset Availability
 # ==========================================
 if "df" not in st.session_state or st.session_state["df"] is None:
-    st.warning(t("no_dataset") if t("no_dataset") != "no_dataset" else "📂 Please upload a dataset first from the Upload page.")
+    st.warning(t("no_dataset") if t("no_dataset") != "no_dataset" else "📂 Please upload a dataset or select the Demo Dataset from the Home / Upload page first.")
     st.stop()
 
 df = st.session_state["df"]
-file_name = st.session_state.get("file_name", "Dataset")
+file_name = st.session_state.get("file_name", "Active_Dataset.csv")
 
 st.divider()
 
@@ -52,7 +52,7 @@ with st.expander("📂 Section 1: Dataset Information & Dtypes Breakdown", expan
     bool_cols = df.select_dtypes(include="bool").columns.tolist()
 
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("📄 File Name", file_name)
+    col1.metric("📄 Dataset Source", file_name)
     col2.metric(t("total_rows") if t("total_rows") != "total_rows" else "📊 Total Rows", f"{rows:,}")
     col3.metric(t("total_columns") if t("total_columns") != "total_columns" else "📊 Total Columns", cols)
     col4.metric("💾 Memory Footprint", f"{file_size_mb:.2f} MB")
@@ -73,7 +73,7 @@ with st.expander("⭐ Section 2: Data Quality & Health Score", expanded=True):
     missing_total = int(df.isnull().sum().sum())
     duplicates = int(df.duplicated().sum())
     empty_cols_cnt = len(df.columns[df.isnull().all()])
-    constant_cols_cnt = len([c for c in df.columns if df[c].nunique() == 1])
+    constant_cols_cnt = len([c for c in df.columns if df[c].nunique(dropna=False) == 1])
 
     # Percentage Calculations
     missing_pct = (missing_total / total_cells * 100) if total_cells > 0 else 0
@@ -207,27 +207,28 @@ with st.expander("🤖 Section 6, 7 & 8: AI Summary, Health Warnings & Actionabl
     with ai_col1:
         st.subheader("🤖 AI Dataset Summary")
         st.info(f"""
-        • The dataset contains **{rows:,} rows** and **{cols} columns**.
-        • Missing cells represent **{missing_pct:.2f}%** of the total volume.
-        • Calculated Health Score is **{quality_score}/100**.
-        • Pipeline Readiness: **{"Ready for cleaning and model ingestion" if quality_score > 70 else "Sanitation highly recommended before analysis"}**.
+        • Loaded Dataset: **{file_name}**
+        • Contains **{rows:,} rows** and **{cols} columns**.
+        • Missing cells represent **{missing_pct:.2f}%** of total volume.
+        • Overall Health Score: **{quality_score}/100**.
+        • Pipeline Status: **{"Ready for feature analysis and modeling" if quality_score > 70 else "Cleaning and pre-processing recommended"}**.
         """)
 
         st.subheader("⚠️ Automated Quality Warnings")
         warnings = []
-        if missing_pct > 0: warnings.append(f"⚠ Found **{missing_total:,} missing values** across columns.")
+        if missing_pct > 0: warnings.append(f"⚠ Found **{missing_total:,} missing values** across attributes.")
         if duplicates > 0: warnings.append(f"⚠ Detected **{duplicates:,} duplicate rows**.")
-        if constant_cols_cnt > 0: warnings.append(f"⚠ Found **{constant_cols_cnt} constant columns** containing single values.")
-        if not warnings: warnings.append("✅ No critical data health warnings detected!")
+        if constant_cols_cnt > 0: warnings.append(f"⚠ Found **{constant_cols_cnt} constant columns** with single unvarying values.")
+        if not warnings: warnings.append("✅ Zero critical data quality warnings detected!")
         for w in warnings: st.write(w)
 
     with ai_col2:
         st.subheader("💡 Actionable AI Recommendations")
         recs = []
-        if duplicates > 0: recs.append("✔ Deduplicate rows in the Data Cleaning page.")
-        if missing_pct > 0: recs.append("✔ Apply missing value imputation (Mean/Median/Mode) or drop empty cells.")
-        if constant_cols_cnt > 0: recs.append("✔ Drop non-informative constant columns.")
-        recs.append("✔ Verify numeric columns stored as text formats.")
+        if duplicates > 0: recs.append("✔ Deduplicate rows in the Data Cleaning module.")
+        if missing_pct > 0: recs.append("✔ Impute missing values (Mean/Median/Mode) or filter out empty entries.")
+        if constant_cols_cnt > 0: recs.append("✔ Remove uninformative constant columns to simplify features.")
+        recs.append("✔ Inspect text fields to ensure consistent formatting and encoding.")
         for r in recs: st.write(r)
 
 st.divider()
