@@ -214,6 +214,39 @@ st.markdown("""
             line-height: 1.5;
             margin: 0;
         }
+
+        /* 💳 Pricing Card Custom Styling */
+        .price-card {
+            background: #FFFFFF;
+            border: 2px solid #E2E8F0;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+        }
+        .price-card:hover {
+            border-color: #2563EB;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(37,99,235,0.12);
+        }
+        .price-card-popular {
+            border: 2px solid #2563EB !important;
+            background: linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%) !important;
+            position: relative;
+        }
+        .popular-badge {
+            background: #2563EB;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 12px;
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -361,6 +394,90 @@ with c9:
         <p>Package all cleaned CSV/Excel files, audit text logs, and JSON schema metadata into a single ZIP file.</p>
     </div>
     """, unsafe_allow_html=True)
+
+st.divider()
+
+# ==========================================
+# 💎 Subscription Plans & USDT Payment
+# ==========================================
+st.subheader("💳 Subscription Plans & Pricing")
+st.write("Choose the plan that fits your analytics needs. Unlock full AI capacity and unlimited processing.")
+
+p1, p2, p3 = st.columns(3)
+
+with p1:
+    st.markdown("""
+    <div class='price-card'>
+        <h3>Monthly Plan</h3>
+        <h1 style='color: #2563EB;'>$29 <span style='font-size: 14px; color: #64748B;'>/ mo</span></h1>
+        <p style='color: #64748B;'>Flexible month-to-month access</p>
+        <hr style='border: 0.5px solid #F1F5F9;'>
+        <ul style='text-align: left; color: #334155; font-size: 14px; line-height: 2;'>
+            <td> Full Pipeline Access</td><br>
+            <td> Unlimited File Uploads</td><br>
+            <td> Standard Processing Speed</td>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+with p2:
+    st.markdown("""
+    <div class='price-card price-card-popular'>
+        <div class='popular-badge'>MOST POPULAR</div>
+        <h3>Semi-Annual Plan</h3>
+        <h1 style='color: #2563EB;'>$140 <span style='font-size: 14px; color: #64748B;'>/ 6 mos</span></h1>
+        <p style='color: #16A34A; font-weight: 700;'>Save 20%</p>
+        <hr style='border: 0.5px solid #E2E8F0;'>
+        <ul style='text-align: left; color: #334155; font-size: 14px; line-height: 2;'>
+            <td> All Monthly Features</td><br>
+            <td> High Priority AI Execution</td><br>
+            <td> Priority Support</td>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+with p3:
+    st.markdown("""
+    <div class='price-card'>
+        <h3>Annual Plan</h3>
+        <h1 style='color: #2563EB;'>$260 <span style='font-size: 14px; color: #64748B;'>/ year</span></h1>
+        <p style='color: #16A34A; font-weight: 700;'>Best Value (Save 25%)</p>
+        <hr style='border: 0.5px solid #F1F5F9;'>
+        <ul style='text-align: left; color: #334155; font-size: 14px; line-height: 2;'>
+            <td> Complete Enterprise Suite</td><br>
+            <td> Dedicated 24/7 Support</td><br>
+            <td> Early Access to New Features</td>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.write("")
+
+# --- USDT Payment Box ---
+with st.expander("⚡ **Pay via Binance / USDT (TRC-20)**", expanded=True):
+    pay_col1, pay_col2 = st.columns([1.5, 2])
+    
+    with pay_col1:
+        st.markdown("### 📱 USDT Payment Info")
+        st.write("**Network:** TRON (TRC-20)")
+        # استبدلي هذا العنوان بعنوان محفظتك المنسوخ من بايننس
+        st.code("THoVn...DsnQT", language="text")
+        st.caption(" Please make sure to transfer via TRC-20 network only.")
+        
+    with pay_col2:
+        st.markdown("### 📝 Confirm Your Subscription")
+        with st.form("home_subscription_form"):
+            selected_plan = st.selectbox("Select Subscription Plan:", ["Monthly Plan ($29)", "Semi-Annual Plan ($140)", "Annual Plan ($260)"])
+            user_email = st.text_input("Your Account Email:")
+            tx_id = st.text_input("Transaction ID (TxID):", help="Paste the TxID from your Binance transfer receipt.")
+            
+            submit_payment = st.form_submit_button("Verify & Activate Subscription", type="primary")
+            
+            if submit_payment:
+                if user_email and tx_id:
+                    st.success("🎉 Payment details submitted successfully! Your plan will be activated within minutes after verification.")
+                else:
+                    st.error(" Please fill in both your email address and the Transaction ID (TxID).")
 
 st.divider()
 st.info("👈 Use the navigation sidebar on the left to start exploring your dataset!")
