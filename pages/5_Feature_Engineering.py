@@ -24,16 +24,25 @@ st.title("🧪 Feature Engineering Studio")
 st.write("Create custom calculated columns, apply mathematical transformations, and encode variables.")
 
 # ==========================================
-# 1. Check Dataset
+# 1. Check Dataset & State Setup
 # ==========================================
 if "df" not in st.session_state or st.session_state["df"] is None:
-    st.warning("⚠️ Please upload a dataset first in the Upload page!")
+    st.warning("📂 Please upload a dataset or select the Demo Dataset from the Home / Upload page first.")
+    
+    col_nav1, col_nav2 = st.columns([1, 1])
+    with col_nav1:
+        if st.button("🏠 Go to Home Page", type="primary", use_container_width=True):
+            st.switch_page("Home.py")
+    with col_nav2:
+        if st.button("📤 Go to Upload Page", type="secondary", use_container_width=True):
+            st.switch_page("pages/2_Upload.py")
+            
     st.stop()
 
 df = st.session_state["df"]
 
 numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-categorical_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+categorical_cols = df.select_dtypes(include=['object', 'category', 'string']).columns.tolist()
 
 # ==========================================
 # Module 1: Custom Advanced Formula Builder
@@ -50,7 +59,7 @@ with st.expander("📝 Module 1: Custom Advanced Formula Builder (Multi-Column)"
     if numeric_cols:
         st.caption(f"📌 Available Numeric Columns: {', '.join(numeric_cols)}")
 
-    if st.button("🚀 Apply Advanced Formula", type="primary"):
+    if st.button("🚀 Apply Advanced Formula", type="primary", key="btn_apply_formula"):
         if formula_expr and new_col_name:
             try:
                 df[new_col_name] = df.eval(formula_expr)
@@ -75,7 +84,7 @@ with st.expander("➕ Module 2: Quick Calculated Column (A op B)"):
         with c4:
             q_name = st.text_input("Result Name:", value=f"{col_a}_{op}_{col_b}")
 
-        if st.button("Create Quick Feature"):
+        if st.button("Create Quick Feature", key="btn_quick_feat"):
             if op == "+": df[q_name] = df[col_a] + df[col_b]
             elif op == "-": df[q_name] = df[col_a] - df[col_b]
             elif op == "*": df[q_name] = df[col_a] * df[col_b]
@@ -100,11 +109,14 @@ with st.expander("📦 Module 3: Feature Binning / Quantilization (Continuous to
         with b_col3:
             bin_col_name = st.text_input("Grouped Column Name:", value=f"{bin_target}_Group")
 
-        if st.button("Apply Binning"):
-            df[bin_col_name] = pd.qcut(df[bin_target], q=num_bins, duplicates='drop').astype(str)
-            st.session_state["df"] = df
-            st.success(f"✅ Created Binned Feature `{bin_col_name}`!")
-            st.rerun()
+        if st.button("Apply Binning", key="btn_apply_bin"):
+            try:
+                df[bin_col_name] = pd.qcut(df[bin_target], q=num_bins, duplicates='drop').astype(str)
+                st.session_state["df"] = df
+                st.success(f"✅ Created Binned Feature `{bin_col_name}`!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ Error applying binning: {str(e)}")
 
 # ==========================================
 # Module 4: Mathematical Transformations
@@ -117,7 +129,7 @@ with st.expander("📐 Module 4: Mathematical Transformations (Skew Reduction)")
         with t_col2:
             trans_type = st.selectbox("Transformation:", ["Log (np.log1p)", "Square Root (np.sqrt)", "Absolute Value"])
 
-        if st.button("Apply Transformation"):
+        if st.button("Apply Transformation", key="btn_apply_trans"):
             new_trans_name = f"{trans_target}_{trans_type.split()[0].lower()}"
             if "Log" in trans_type:
                 df[new_trans_name] = np.log1p(np.maximum(0, df[trans_target]))
@@ -136,7 +148,7 @@ with st.expander("📐 Module 4: Mathematical Transformations (Skew Reduction)")
 with st.expander("🔠 Module 5: Categorical Encoding & Feature Scaling", expanded=False):
     col_enc, col_scale = st.columns(2)
 
-    # --- الجزء الأيسر: Categorical Encoding ---
+    # --- Categorical Encoding ---
     with col_enc:
         st.markdown("#### **Categorical Encoding**")
         if categorical_cols:
@@ -159,7 +171,7 @@ with st.expander("🔠 Module 5: Categorical Encoding & Feature Scaling", expand
         else:
             st.info("No categorical columns available.")
 
-    # --- الجزء الأيمن: Feature Scaling ---
+    # --- Feature Scaling ---
     with col_scale:
         st.markdown("#### **Feature Scaling**")
         if numeric_cols:
@@ -209,4 +221,4 @@ st.divider()
 col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
 with col_b2:
     if st.button("Proceed to Exploratory Data Analysis (EDA) ➔", type="primary", use_container_width=True):
-        st.switch_page("pages/6_Data_Analysis.py")
+        st.switch_page("pages/5_Data_Analysis.py")
