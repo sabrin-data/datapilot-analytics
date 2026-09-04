@@ -27,6 +27,34 @@ st.write(t("sub_title") if t("sub_title") != "sub_title" else "Upload your datas
 st.divider()
 
 # ==========================================
+# 🔒 Subscription Check Logic
+# ==========================================
+if "is_subscribed" not in st.session_state:
+    st.session_state["is_subscribed"] = False
+
+# شريط جانبى أو مربع سري للتحقق من كود التفعيل (يمكنك تغيير الكود كما تحبين)
+VALID_KEYS = ["DATAPILOT2026", "PRO2026", "PAID_USER"]
+
+with st.expander("🔑 Have a Subscription / Activation Key?", expanded=not st.session_state["is_subscribed"]):
+    sub_col1, sub_col2 = st.columns([3, 1])
+    with sub_col1:
+        user_key = st.text_input("Enter your License / Activation Key:", value=st.session_state.get("license_key", ""), type="password")
+    with sub_col2:
+        st.write("")
+        st.write("")
+        if st.button("Activate Key", use_container_width=True):
+            if user_key.strip() in VALID_KEYS:
+                st.session_state["is_subscribed"] = True
+                st.session_state["license_key"] = user_key.strip()
+                st.success("🎉 License Activated Successfully!")
+                st.rerun()
+            else:
+                st.error("❌ Invalid License Key. Please check or subscribe.")
+
+if st.session_state["is_subscribed"]:
+    st.success("⚡ **Status:** Active Subscription — Unlimited Dataset Uploads Enabled.")
+
+# ==========================================
 # 1. Helper Function: Safe File Loader
 # ==========================================
 def load_dataset(uploaded_file):
@@ -65,50 +93,62 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
-    try:
-        with st.spinner("Parsing dataset and verifying structural integrity..."):
-            df, filename, used_encoding = load_dataset(uploaded_file)
+    # 🛑 فحص شرط الاشتراك قبل المعالجة
+    if not st.session_state.get("is_subscribed", False):
+        st.warning("⚠️ **Subscription Required:** Custom dataset upload is available for subscribed accounts only.")
+        
+        col_pay1, col_pay2 = st.columns(2)
+        with col_pay1:
+            if st.button("💳 View Subscription Plans (Home)", type="primary", use_container_width=True):
+                st.switch_page("Home.py")
+        with col_pay2:
+            if st.button("✨ Try Demo Dataset Instead", use_container_width=True):
+                st.switch_page("Home.py")
+    else:
+        try:
+            with st.spinner("Parsing dataset and verifying structural integrity..."):
+                df, filename, used_encoding = load_dataset(uploaded_file)
 
-        st.session_state["df"] = df.copy()
-        st.session_state["original_df"] = df.copy()
-        st.session_state["file_name"] = filename
-        st.session_state["cleaning_log"] = []  
+            st.session_state["df"] = df.copy()
+            st.session_state["original_df"] = df.copy()
+            st.session_state["file_name"] = filename
+            st.session_state["cleaning_log"] = []  
 
-        st.success(f"🎉 Dataset **'{filename}'** successfully uploaded and loaded into active memory!")
+            st.success(f"🎉 Dataset **'{filename}'** successfully uploaded and loaded into active memory!")
 
-        m_col1, m_col2, m_col3, m_col4 = st.columns(4)
-        m_col1.metric("📊 Total Rows", f"{len(df):,}")
-        m_col2.metric("📊 Total Columns", df.shape[1])
-        m_col3.metric("🔤 Detected Encoding", used_encoding)
-        m_col4.metric("💾 Memory Footprint", f"{df.memory_usage(deep=True).sum() / 1024:.1f} KB")
+            m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+            m_col1.metric("📊 Total Rows", f"{len(df):,}")
+            m_col2.metric("📊 Total Columns", df.shape[1])
+            m_col3.metric("🔤 Detected Encoding", used_encoding)
+            m_col4.metric("💾 Memory Footprint", f"{df.memory_usage(deep=True).sum() / 1024:.1f} KB")
 
-        st.divider()
+            st.divider()
 
-        st.subheader("🔍 Initial Structural Verification")
-        col_left, col_right = st.columns([2, 1])
+            st.subheader("🔍 Initial Structural Verification")
+            col_left, col_right = st.columns([2, 1])
 
-        with col_left:
-            st.markdown("##### **First 5 Rows Preview**")
-            st.dataframe(df.head(), use_container_width=True)
+            with col_left:
+                st.markdown("##### **First 5 Rows Preview**")
+                st.dataframe(df.head(), use_container_width=True)
 
-        with col_right:
-            st.markdown("##### **Column Dtypes & Null Count**")
-            schema_df = pd.DataFrame({
-                "Column Name": df.columns,
-                "Data Type": df.dtypes.astype(str),
-                "Missing Values": df.isnull().sum().values
-            })
-            st.dataframe(schema_df, use_container_width=True, height=220)
+            with col_right:
+                st.markdown("##### **Column Dtypes & Null Count**")
+                schema_df = pd.DataFrame({
+                    "Column Name": df.columns,
+                    "Data Type": df.dtypes.astype(str),
+                    "Missing Values": df.isnull().sum().values
+                })
+                st.dataframe(schema_df, use_container_width=True, height=220)
 
-        st.divider()
+            st.divider()
 
-        c_space, c_btn, c_space2 = st.columns([1, 2, 1])
-        with c_btn:
-            if st.button("Proceed to Data Overview ➔", type="primary", use_container_width=True):
-                st.switch_page("pages/3_Data_Overview.py")
+            c_space, c_btn, c_space2 = st.columns([1, 2, 1])
+            with c_btn:
+                if st.button("Proceed to Data Overview ➔", type="primary", use_container_width=True):
+                    st.switch_page("pages/3_Data_Overview.py")
 
-    except Exception as e:
-        st.error(f"❌ Failed to parse file: {str(e)}")
+        except Exception as e:
+            st.error(f"❌ Failed to parse file: {str(e)}")
 
 else:
     if "df" in st.session_state and st.session_state["df"] is not None:
