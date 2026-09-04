@@ -30,15 +30,24 @@ st.write("Comprehensive data sanitation, text standardization, currency parsing,
 # 1. Check Dataset Availability & State Setup
 # ==========================================
 if "df" not in st.session_state or st.session_state["df"] is None:
-    st.warning("📂 Please upload a dataset first from the Upload page.")
+    st.warning("📂 Please upload a dataset or select the Demo Dataset from the Home / Upload page first.")
+    
+    col_nav1, col_nav2 = st.columns([1, 1])
+    with col_nav1:
+        if st.button("🏠 Go to Home Page", type="primary", use_container_width=True):
+            st.switch_page("Home.py")
+    with col_nav2:
+        if st.button("📤 Go to Upload Page", type="secondary", use_container_width=True):
+            st.switch_page("pages/2_Upload.py")
+            
     st.stop()
 
 # Backup copy for resetting capabilities
-if "original_df" not in st.session_state:
+if "original_df" not in st.session_state or st.session_state["original_df"] is None:
     st.session_state["original_df"] = st.session_state["df"].copy()
 
 df = st.session_state["df"]
-file_name = st.session_state.get("file_name", "Dataset")
+file_name = st.session_state.get("file_name", "Active_Dataset.csv")
 
 # Header status bar & reset button
 col_h1, col_h2 = st.columns([3, 1])
@@ -60,14 +69,14 @@ st.divider()
 st.subheader("🤖 Smart Data Health Audit & AI Recommendations")
 
 ai_suggestions = []
-single_val_cols = [c for c in df.columns if df[c].nunique() == 1]
+single_val_cols = [c for c in df.columns if df[c].nunique(dropna=False) == 1]
 high_null_cols = [c for c in df.columns if (df[c].isnull().sum() / len(df)) > 0.9]
 
-text_cols = df.select_dtypes(include=["object", "string"]).columns.tolist()
+text_cols = df.select_dtypes(include=["object", "string", "category"]).columns.tolist()
 num_as_str_cols = []
 for c in text_cols:
     sample = df[c].dropna().astype(str)
-    cleaned_sample = sample.str.replace(r"[$,₪,€,%]", "", regex=True)
+    cleaned_sample = sample.str.replace(r"[$,₪,€,%,£]", "", regex=True)
     if not cleaned_sample.empty and cleaned_sample.str.replace(".", "", regex=False).str.isnumeric().all():
         num_as_str_cols.append(c)
 
@@ -213,7 +222,7 @@ if st.button("🚀 Execute Comprehensive Cleaning", type="primary", use_containe
         cleaned_df = cleaned_df.dropna(subset=curr_num_cols)
         cleaning_log.append(f"✔ Dropped **{b - len(cleaned_df):,}** rows containing numeric missing values.")
 
-    curr_cat_cols = cleaned_df.select_dtypes(include=["object", "category"]).columns
+    curr_cat_cols = cleaned_df.select_dtypes(include=["object", "category", "string"]).columns
     if fill_cat_method == "Fill with Mode (Most Frequent)":
         for col in curr_cat_cols:
             if not cleaned_df[col].mode().empty:
