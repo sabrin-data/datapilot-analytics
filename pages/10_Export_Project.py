@@ -10,12 +10,13 @@ from utils.translations import init_language, t
 # 0. Page Configuration & Language Init
 # ==============================================================================
 st.set_page_config(
-    page_title="Export Cleaned Dataset & Reports",
+    page_title="DataPilot AI - Export Project Data",
     page_icon="📦",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# يقرأ اللغة المختارة ويظهر القائمة الجانبية
+# تفعيل تهيئة اللغة
 init_language()
 
 # قراءة الـ CSS الموحد
@@ -25,10 +26,33 @@ try:
 except FileNotFoundError:
     pass
 
+# Header Section
 st.title("📦 Export Project Data & Analytics")
-st.write(t("sub_title") if t("sub_title") != "sub_title" else "Download your fully cleaned dataset as an Excel Table, CSV, or export project assets.")
+st.write(
+    t("sub_title")
+    if t("sub_title") != "sub_title"
+    else "Download your fully cleaned dataset as an Excel Table, CSV, or export project assets."
+)
 
 st.divider()
+
+# ==============================================================================
+# 🔐 Subscription Guard Check
+# ==============================================================================
+user_plan = st.session_state.get("user_plan", "Pro")  # الخيارات: 'Free', 'Pro', 'Enterprise'
+
+if user_plan == "Free":
+    st.warning("🔒 **Premium Feature Locked:** Exporting styled Excel tables and advanced project assets is available on **Pro** and **Enterprise** plans.")
+    
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        st.info("💡 **Upgrade to Pro Plan**\n- Formatted Excel (.xlsx) Downloads\n- Auto-adjusted Column Widths & Table Styling\n- Full UTF-8 Encoded CSV Exports")
+    with col_p2:
+        st.success("🚀 **Enterprise Plan**\n- Automated Scheduled Data Exports\n- Direct Database Connections\n- Dedicated Cloud Storage Integration")
+        
+    if st.button("⭐ Upgrade Subscription Now", type="primary", use_container_width=True, key="export_guard_upgrade_btn"):
+        st.switch_page("pages/8_Pricing.py")
+    st.stop()
 
 # ==============================================================================
 # 1. Helper Function: Convert DF to Styled Excel Table with Auto Column Width
@@ -91,7 +115,7 @@ for key in possible_keys:
             break
 
 # ==============================================================================
-# 3. Render Export Buttons
+# 3. Render Export Buttons & Navigation
 # ==============================================================================
 if export_df is not None:
     st.subheader("📊 Download Processed Dataset")
@@ -109,6 +133,7 @@ if export_df is not None:
             data=excel_bytes,
             file_name="DataPilot_Cleaned_Dataset.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            type="primary",
             use_container_width=True
         )
 
@@ -135,3 +160,19 @@ if export_df is not None:
 
 else:
     st.error(t("no_dataset") if t("no_dataset") != "no_dataset" else "❌ No active dataset found in memory.")
+    
+    col_nav1, col_nav2 = st.columns(2)
+    with col_nav1:
+        if st.button("🏠 Go to Home Page", type="primary", use_container_width=True, key="no_data_home_btn"):
+            st.switch_page("Home.py")
+    with col_nav2:
+        if st.button("📤 Go to Upload Page", type="secondary", use_container_width=True, key="no_data_upload_btn"):
+            st.switch_page("pages/2_Upload.py")
+
+st.divider()
+
+# Navigation Footer Button
+col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
+with col_b2:
+    if st.button("🏠 Return to Dashboard Home ➔", type="primary", use_container_width=True, key="export_home_btn"):
+        st.switch_page("Home.py")
