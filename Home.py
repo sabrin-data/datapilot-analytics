@@ -281,25 +281,33 @@ with btn_col1:
 with btn_col2:
     if st.button("✨ Try Demo Dataset", type="secondary", use_container_width=True):
         np.random.seed(42)
-        dates = pd.date_range(start="2026-01-01", periods=120, freq="D")
-        regions = ["North America", "Europe", "Asia-Pacific", "Latin America"]
-        products = ["DataPilot Pro", "DataPilot Enterprise", "DataPilot Starter"]
-        channels = ["Online", "Direct Sales", "Partner"]
+        n_rows = 2500  # 🚀 رفع عدد الصفوف إلى 2500 صف
+        
+        dates = pd.date_range(start="2024-01-01", periods=n_rows, freq="h")
+        regions = ["North America", "Europe", "Asia-Pacific", "Latin America", "Middle East"]
+        products = ["DataPilot Pro", "DataPilot Enterprise", "DataPilot Starter", "DataPilot Custom"]
+        channels = ["Online", "Direct Sales", "Partner", "Reseller"]
+        
+        sales_data = np.random.randint(250, 5000, n_rows).astype(float)
+        ratings_data = np.random.uniform(3.0, 5.0, n_rows).round(1)
+        
+        # إضافة بعض القيم الفارغة لإظهار قوة أدوات التنظيف في المنصة
+        sales_data[np.random.choice(n_rows, 50, replace=False)] = np.nan
         
         demo_df = pd.DataFrame({
-            "Transaction_ID": [f"TRX-{2000+i}" for i in range(120)],
+            "Transaction_ID": [f"TRX-{10000+i}" for i in range(n_rows)],
             "Date": dates,
-            "Region": np.random.choice(regions, 120),
-            "Product": np.random.choice(products, 120),
-            "Sales_Channel": np.random.choice(channels, 120),
-            "Sales_Amount": np.random.randint(250, 2500, 120),
-            "Units_Sold": np.random.randint(1, 20, 120),
-            "Customer_Rating": np.random.uniform(3.8, 5.0, 120).round(1)
+            "Region": np.random.choice(regions, n_rows),
+            "Product": np.random.choice(products, n_rows),
+            "Sales_Channel": np.random.choice(channels, n_rows),
+            "Sales_Amount": sales_data,
+            "Units_Sold": np.random.randint(1, 50, n_rows),
+            "Customer_Rating": ratings_data
         })
         
         st.session_state["df"] = demo_df
-        st.session_state["file_name"] = "Demo_Sales_Dataset.csv"
-        st.toast("⚡ Demo Dataset Loaded Successfully!", icon="🎉")
+        st.session_state["file_name"] = "Demo_Enterprise_Sales_2500.csv"
+        st.toast("⚡ Demo Enterprise Dataset (2,500 rows) Loaded Successfully!", icon="🎉")
         
         # 🚀 التوجيه الفوري والمباشر لصفحة Data Overview
         st.switch_page("pages/3_Data_Overview.py")
@@ -463,7 +471,7 @@ with st.expander("⚡ **Pay via Binance / USDT (TRC-20)**", expanded=True):
         st.markdown("### 📱 USDT Payment Info")
         st.write("**Network:** TRON (TRC-20)")
         
-        # 🔑 تم وضع عنوان المحفظة الشخصي الخاص بكِ هنا
+        # 🔑 عنوان المحفظة الخاص بكِ
         st.code("THoVnheKVqe1t3beyHbTnDBMeU9GnDsnQT", language="text")
         st.caption("⚠️ Please make sure to transfer via TRC-20 network only.")
         
