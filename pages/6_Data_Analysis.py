@@ -24,8 +24,27 @@ try:
 except FileNotFoundError:
     pass
 
+# ==========================================
+# 🔐 Subscription Guard Check
+# ==========================================
+user_plan = st.session_state.get("user_plan", "Pro")  # الخيارات: 'Free', 'Pro', 'Enterprise'
+
 st.title("🔍 Exploratory Data Analysis (EDA) Studio")
 st.write("Interactive statistical analysis, dynamic visual relationship discovery, and automated data insights.")
+
+# فحص مستوى اشتراك المستخدم
+if user_plan == "Free":
+    st.warning("🔒 **Premium Feature Locked:** Full Exploratory Data Analysis with advanced insights is available on **Pro** and **Enterprise** plans.")
+    
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        st.info("💡 **Upgrade to Pro Plan**\n- Unlock deep statistical analysis\n- Automated AI Insights & Heatmaps\n- Unlimited interactive charts")
+    with col_p2:
+        st.success("🚀 **Enterprise Plan**\n- Custom statistical aggregations\n- Full priority support & exports\n- Team collaboration features")
+        
+    if st.button("⭐ Upgrade Subscription Now", type="primary", use_container_width=True):
+        st.switch_page("pages/8_Pricing.py")
+    st.stop()
 
 # ==========================================
 # 1. Check Dataset Availability
@@ -37,7 +56,7 @@ if "df" not in st.session_state or st.session_state["df"] is None:
 df = st.session_state["df"]
 file_name = st.session_state.get("file_name", "Dataset")
 
-st.info(f"📁 Active Dataset: **{file_name}** | Dimensions: **{df.shape[0]:,} rows × {df.shape[1]} columns**")
+st.info(f"📁 Active Dataset: **{file_name}** | Dimensions: **{df.shape[0]:,} rows × {df.shape[1]} columns** | Plan: **{user_plan} Member** 🌟")
 st.divider()
 
 # ==========================================
