@@ -37,16 +37,43 @@ st.title("🤖 AI Analyst")
 st.write("Your interactive enterprise AI Data Scientist for automated diagnostics, predictive modeling, and strategic business analysis.")
 
 # ==========================================
+# 🔐 Subscription Guard Check
+# ==========================================
+user_plan = st.session_state.get("user_plan", "Pro")  # الخيارات: 'Free', 'Pro', 'Enterprise'
+
+if user_plan == "Free":
+    st.warning("🔒 **Premium Feature Locked:** The AI Analyst Studio & Machine Learning Suite are available on **Pro** and **Enterprise** plans.")
+    
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        st.info("💡 **Upgrade to Pro Plan**\n- Automated ML Predictive Modeling\n- Isolation Forest Anomaly Detection\n- Full Correlation Analysis & Insights")
+    with col_p2:
+        st.success("🚀 **Enterprise Plan**\n- Custom Model Fine-tuning\n- One-Click Executive PDF Reports\n- Dedicated AI Infrastructure")
+        
+    if st.button("⭐ Upgrade Subscription Now", type="primary", use_container_width=True):
+        st.switch_page("pages/8_Pricing.py")
+    st.stop()
+
+# ==========================================
 # 1. Check Dataset Availability
 # ==========================================
 if "df" not in st.session_state or st.session_state["df"] is None:
-    st.warning("⚠️ Please upload a dataset first in the Upload page!")
+    st.warning("📂 Please upload a dataset or select the Demo Dataset from the Home / Upload page first.")
+    
+    col_nav1, col_nav2 = st.columns(2)
+    with col_nav1:
+        if st.button("🏠 Go to Home Page", type="primary", use_container_width=True):
+            st.switch_page("Home.py")
+    with col_nav2:
+        if st.button("📤 Go to Upload Page", type="secondary", use_container_width=True):
+            st.switch_page("pages/2_Upload.py")
+            
     st.stop()
 
 df = st.session_state["df"].copy()
 file_name = st.session_state.get("file_name", "Dataset")
 
-st.info(f"📁 Active Dataset: **{file_name}** | Dimensions: **{df.shape[0]:,} rows × {df.shape[1]} cols**")
+st.info(f"📁 Active Dataset: **{file_name}** | Dimensions: **{df.shape[0]:,} rows × {df.shape[1]} cols** | Plan: **{user_plan} Member** 🌟")
 st.divider()
 
 # Classify attributes
@@ -73,7 +100,6 @@ with tab_ask:
     st.subheader("💬 Ask Anything About Your Dataset")
     st.caption("Query your data using plain language to get instant statistical answers and data breakdowns.")
     
-    # ربط مربع النص بـ key دائم لحفظه في الجلسة عند الرجوع
     user_query = st.text_input(
         "Enter your query or prompt for AI Analyst:",
         placeholder="e.g. What are the key business insights and recommendations to increase sales?",
@@ -82,7 +108,6 @@ with tab_ask:
     
     if st.button("🤖 Process Query", type="primary", key="ask_btn"):
         if user_query.strip():
-            # حفظ استجابة الاستعلام في session_state حتى لا تضيع مع الرندر
             st.session_state["last_processed_query"] = user_query
             
             with st.spinner("AI Analyst is analyzing dataset structure..."):
@@ -91,9 +116,7 @@ with tab_ask:
                 
                 query_clean = user_query.lower().strip()
                 
-                # Check for strategic business query intent
                 if any(k in query_clean for k in ["insight", "recommend", "increase sale", "strategy", "summary", "advice", "growth", "business"]):
-                    # Smart calculations from active dataset
                     top_cat = "N/A"
                     if 'Category' in df.columns and 'Total Spent' in df.columns:
                         top_cat = df.groupby('Category')['Total Spent'].sum().idxmax()
@@ -114,7 +137,6 @@ with tab_ask:
                     * 🔍 **Deep Dive:** Navigate to the **Key Insights** and **Recommendations & ML** tabs above for complete model metrics and anomaly detections!
                     """)
                 else:
-                    # Default Data Breakdown Preview for standard data queries
                     st.dataframe(df.head(10), use_container_width=True)
         else:
             st.error("Please enter a valid query.")
@@ -149,7 +171,6 @@ with tab_insights:
     st.subheader("💡 Automated Key Insights & Correlation Analysis")
     st.caption("Discover patterns, statistical anomalies, and strong variable interactions.")
     
-    # Filter core numeric attributes (exclude encoded/derived dummy variables)
     base_corr_cols = [
         col for col in num_cols
         if not col.startswith(('Category_', 'Payment Method_', 'Payment_', 'Item_'))
@@ -387,7 +408,7 @@ with tab_report:
     
     st.success("✅ Dataset and AI metrics ready for compilation.")
     if st.button("📄 Generate & Export Executive Summary", type="primary", use_container_width=True, key="export_report_btn"):
-        st.switch_page("pages/8_Executive_Report.py" if "pages/8_Executive_Report.py" in str(st.session_state) else "pages/9_Report_Generator.py")
+        st.switch_page("pages/9_Report_Generator.py")
 
 st.divider()
 
@@ -395,4 +416,4 @@ st.divider()
 col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
 with col_b2:
     if st.button("Proceed to Executive Report Generator ➔", type="primary", use_container_width=True, key="proceed_report_btn"):
-        st.switch_page("pages/8_Executive_Report.py" if "pages/8_Executive_Report.py" in str(st.session_state) else "pages/9_Report_Generator.py")
+        st.switch_page("pages/9_Report_Generator.py")
