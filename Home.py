@@ -462,24 +462,30 @@ with st.expander("⚡ **Pay via Binance / USDT (TRC-20)**", expanded=True):
     with pay_col1:
         st.markdown("### 📱 USDT Payment Info")
         st.write("**Network:** TRON (TRC-20)")
-        # استبدلي هذا العنوان بعنوان محفظتك المنسوخ من بايننس
-        st.code("THoVn...DsnQT", language="text")
-        st.caption(" Please make sure to transfer via TRC-20 network only.")
+        
+        # 🔑 تم وضع عنوان المحفظة الشخصي الخاص بكِ هنا
+        st.code("THoVnheKVqe1t3beyHbTnDBMeU9GnDsnQT", language="text")
+        st.caption("⚠️ Please make sure to transfer via TRC-20 network only.")
         
     with pay_col2:
         st.markdown("### 📝 Confirm Your Subscription")
         with st.form("home_subscription_form"):
             selected_plan = st.selectbox("Select Subscription Plan:", ["Monthly Plan ($29)", "Semi-Annual Plan ($140)", "Annual Plan ($260)"])
-            user_email = st.text_input("Your Account Email:")
-            tx_id = st.text_input("Transaction ID (TxID):", help="Paste the TxID from your Binance transfer receipt.")
+            user_email = st.text_input("Your Account Email:", placeholder="name@example.com")
+            tx_id = st.text_input("Transaction ID (TxID):", help="Paste the TxID from your Binance transfer receipt.", placeholder="Enter the TRC-20 transaction hash...")
             
-            submit_payment = st.form_submit_button("Verify & Activate Subscription", type="primary")
+            submit_payment = st.form_submit_button("Verify & Activate Subscription", type="primary", use_container_width=True)
             
             if submit_payment:
                 if user_email and tx_id:
+                    st.session_state["pending_subscription"] = {
+                        "email": user_email,
+                        "txid": tx_id,
+                        "plan": selected_plan
+                    }
                     st.success("🎉 Payment details submitted successfully! Your plan will be activated within minutes after verification.")
                 else:
-                    st.error(" Please fill in both your email address and the Transaction ID (TxID).")
+                    st.error("⚠️ Please fill in both your email address and the Transaction ID (TxID).")
 
 st.divider()
 st.info("👈 Use the navigation sidebar on the left to start exploring your dataset!")
