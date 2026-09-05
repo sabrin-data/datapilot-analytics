@@ -8,12 +8,13 @@ from utils.translations import init_language, t
 # 0. Page Configuration & Language Init
 # ==========================================
 st.set_page_config(
-    page_title="Application Settings",
+    page_title="DataPilot AI - Settings",
     page_icon="⚙️",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# يقرأ اللغة المختارة ويظهر القائمة الجانبية
+# تفعيل تهيئة اللغة
 init_language()
 
 # قراءة الـ CSS الموحد
@@ -24,7 +25,31 @@ except FileNotFoundError:
     pass
 
 st.title("⚙️ Application Settings & Configuration")
-st.write(t("sub_title") if t("sub_title") != "sub_title" else "Manage app preferences, session cache, system diagnostics, and API keys.")
+st.write(
+    t("sub_title")
+    if t("sub_title") != "sub_title"
+    else "Manage app preferences, session cache, system diagnostics, and API keys."
+)
+
+st.divider()
+
+# ==========================================
+# 💳 Section 0: Subscription Status (Non-Blocking)
+# ==========================================
+user_plan = st.session_state.get("user_plan", "Free")  # الخيارات: 'Free', 'Pro', 'Enterprise'
+
+col_sub1, col_sub2 = st.columns([3, 1])
+with col_sub1:
+    if user_plan == "Free":
+        st.info("💡 **Current Subscription Plan: Free** | Upgrade to **Pro** or **Enterprise** to unlock full AI automation, HTML report exports, and custom backend tools.")
+    else:
+        st.success(f"⭐ **Current Subscription Plan: {user_plan}** | All premium features and integrations unlocked.")
+
+with col_sub2:
+    if st.button("🚀 Manage Subscription", type="primary", use_container_width=True, key="settings_plan_btn"):
+        st.switch_page("pages/8_Pricing.py")
+
+st.divider()
 
 # ==========================================
 # 1. App Preferences & UI Settings
@@ -123,16 +148,18 @@ with col_mem1:
         st.warning(t("no_dataset") if t("no_dataset") != "no_dataset" else "📂 No active dataset currently loaded in session state.")
 
 with col_mem2:
-    if st.button("🗑️ Clear Cache & Reset All Session Data", type="primary", use_container_width=True):
-        # حفظ لغة المستخدم الحالية كي لا تضيع بعد المسح
+    if st.button("🗑️ Clear Cache & Reset All Session Data", type="primary", use_container_width=True, key="reset_cache_btn"):
+        # حفظ لغة ونوع اشتراك المستخدم كي لا تضيع بعد المسح
         current_lang = st.session_state.get("lang", "en")
+        current_plan = st.session_state.get("user_plan", "Pro")
         
         # مسح الذاكرة
         st.session_state.clear()
         st.cache_data.clear()
         
-        # إعادة اللغة المحفوظة
+        # إعادة البيانات الأساسية المحفوظة
         st.session_state["lang"] = current_lang
+        st.session_state["user_plan"] = current_plan
         
         st.success("Session state and cache completely reset!")
         st.rerun()
@@ -156,3 +183,11 @@ sys_df = pd.DataFrame(list(sys_info.items()), columns=["Component", "Details"])
 st.table(sys_df)
 
 st.success("✅ Application operating normally with full configuration compatibility.")
+
+st.divider()
+
+# Navigation Footer Button
+col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
+with col_b2:
+    if st.button("🏠 Return to Dashboard Home ➔", type="primary", use_container_width=True, key="settings_home_btn"):
+        st.switch_page("Home.py")
