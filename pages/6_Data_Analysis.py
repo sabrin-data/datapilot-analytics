@@ -50,7 +50,16 @@ if user_plan == "Free":
 # 1. Check Dataset Availability
 # ==========================================
 if "df" not in st.session_state or st.session_state["df"] is None:
-    st.warning("📂 No Active Dataset: Please upload a CSV or Excel file from the Upload page to begin.")
+    st.warning("📂 Please upload a dataset or select the Demo Dataset from the Home / Upload page first.")
+    
+    col_nav1, col_nav2 = st.columns(2)
+    with col_nav1:
+        if st.button("🏠 Go to Home Page", type="primary", use_container_width=True):
+            st.switch_page("Home.py")
+    with col_nav2:
+        if st.button("📤 Go to Upload Page", type="secondary", use_container_width=True):
+            st.switch_page("pages/2_Upload.py")
+            
     st.stop()
 
 df = st.session_state["df"]
