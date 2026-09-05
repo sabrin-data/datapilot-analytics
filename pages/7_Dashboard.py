@@ -23,16 +23,49 @@ try:
 except FileNotFoundError:
     pass
 
+# ==========================================
+# 🔐 Subscription Guard Check
+# ==========================================
+user_plan = st.session_state.get("user_plan", "Pro")  # الخيارات: 'Free', 'Pro', 'Enterprise'
+
 st.title("📊 Executive Dashboard & AI Assistant")
+st.write("Interactive executive metrics, dynamic visual breakdowns, and real-time AI data copilot.")
+
+# فحص مستوى اشتراك المستخدم
+if user_plan == "Free":
+    st.warning("🔒 **Premium Feature Locked:** Executive Dashboard and Interactive AI Copilot are available on **Pro** and **Enterprise** plans.")
+    
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        st.info("💡 **Upgrade to Pro Plan**\n- Dynamic executive slicers & KPIs\n- Full interactive chart breakdown\n- Real-time AI Data Copilot")
+    with col_p2:
+        st.success("🚀 **Enterprise Plan**\n- Custom dashboard layouts\n- Automated reporting exports\n- Dedicated priority support")
+        
+    if st.button("⭐ Upgrade Subscription Now", type="primary", use_container_width=True):
+        st.switch_page("pages/8_Pricing.py")
+    st.stop()
 
 # ==========================================
 # 1. Check Dataset Availability
 # ==========================================
 if "df" not in st.session_state or st.session_state["df"] is None:
-    st.warning("⚠️ Please upload a dataset first in the Upload page!")
+    st.warning("📂 Please upload a dataset or select the Demo Dataset from the Home / Upload page first.")
+    
+    col_nav1, col_nav2 = st.columns(2)
+    with col_nav1:
+        if st.button("🏠 Go to Home Page", type="primary", use_container_width=True):
+            st.switch_page("Home.py")
+    with col_nav2:
+        if st.button("📤 Go to Upload Page", type="secondary", use_container_width=True):
+            st.switch_page("pages/2_Upload.py")
+            
     st.stop()
 
 df = st.session_state["df"]
+file_name = st.session_state.get("file_name", "Dataset")
+
+st.info(f"📁 Active Dataset: **{file_name}** | Dimensions: **{df.shape[0]:,} rows × {df.shape[1]} columns** | Plan: **{user_plan} Member** 🌟")
+st.divider()
 
 # تصنيف الأعمدة
 categorical_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
@@ -255,4 +288,4 @@ st.divider()
 col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
 with col_b2:
     if st.button("Proceed to AI Analysis ➔", type="primary", use_container_width=True, key="btn_proceed_ml"):
-        st.switch_page("pages/8_AI_Analysis.py")  # أو اسم الملف الفعلي لديك لصفحة AI Analysis
+        st.switch_page("pages/8_AI_Analysis.py")
