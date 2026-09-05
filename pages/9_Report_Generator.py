@@ -11,12 +11,13 @@ from utils.translations import init_language, t
 # 0. Page Configuration & Language Init
 # ==========================================
 st.set_page_config(
-    page_title="Executive Report Generator",
+    page_title="DataPilot AI - Report Generator",
     page_icon="📄",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# يقرأ اللغة المختارة ويظهر القائمة الجانبية
+# تفعيل تهيئة اللغة
 init_language()
 
 # قراءة الـ CSS الموحد
@@ -26,12 +27,31 @@ try:
 except FileNotFoundError:
     pass
 
+# Header Section
 st.title("📄 Executive Report Generator & Export Studio")
 st.write(
     t("sub_title")
     if t("sub_title") != "sub_title"
-    else "Synthesize dataset metrics, cleaning logs, statistical insights, and visual dashboards into a comprehensive report."
+    else "Synthesize dataset metrics, cleaning logs, statistical insights, and visual dashboards into a comprehensive executive report."
 )
+
+# ==========================================
+# 🔐 Subscription Guard Check
+# ==========================================
+user_plan = st.session_state.get("user_plan", "Pro")  # الخيارات: 'Free', 'Pro', 'Enterprise'
+
+if user_plan == "Free":
+    st.warning("🔒 **Premium Feature Locked:** The Executive PDF & Interactive HTML Report Generator is available on **Pro** and **Enterprise** plans.")
+    
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        st.info("💡 **Upgrade to Pro Plan**\n- Dynamic Executive HTML Reports\n- Automated Data Sanitation Audit Logs\n- Complete Interactive Plotly Dashboards Export")
+    with col_p2:
+        st.success("🚀 **Enterprise Plan**\n- White-label PDF Customization\n- Automated Email Report Delivery\n- Dedicated Executive Support")
+        
+    if st.button("⭐ Upgrade Subscription Now", type="primary", use_container_width=True, key="guard_upgrade_btn"):
+        st.switch_page("pages/8_Pricing.py")
+    st.stop()
 
 # ==========================================
 # 1. Check Dataset Availability
@@ -40,8 +60,17 @@ if "df" not in st.session_state or st.session_state["df"] is None:
     st.warning(
         t("no_dataset")
         if t("no_dataset") != "no_dataset"
-        else "📂 Please upload a dataset first from the Upload page."
+        else "📂 Please upload a dataset or select the Demo Dataset from the Home / Upload page first."
     )
+    
+    col_nav1, col_nav2 = st.columns(2)
+    with col_nav1:
+        if st.button("🏠 Go to Home Page", type="primary", use_container_width=True, key="no_df_home_btn"):
+            st.switch_page("Home.py")
+    with col_nav2:
+        if st.button("📤 Go to Upload Page", type="secondary", use_container_width=True, key="no_df_upload_btn"):
+            st.switch_page("pages/2_Upload.py")
+            
     st.stop()
 
 df = st.session_state["df"].copy()
@@ -339,3 +368,9 @@ with st.expander("👁️ Live Preview Generated HTML Executive Report", expande
     components.html(html_report, height=600, scrolling=True)
 
 st.success("🎉 Report Studio Ready!")
+
+# Transition / Navigation Button
+col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
+with col_b2:
+    if st.button("🏠 Return to Dashboard Home ➔", type="primary", use_container_width=True, key="return_home_btn"):
+        st.switch_page("Home.py")
