@@ -288,4 +288,4 @@ st.divider()
 col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
 with col_b2:
     if st.button("Proceed to AI Analysis ➔", type="primary", use_container_width=True, key="btn_proceed_ml"):
-        st.switch_page("pages8_AI_Analys.py")
+        st.switch_page("pages/8_AI_Analys.py")
